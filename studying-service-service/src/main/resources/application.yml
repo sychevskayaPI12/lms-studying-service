@@ -1,0 +1,29 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /@project.artifactId@
+
+spring:
+  profiles:
+    active: '@spring.profiles.active@'
+  application:
+    name: @project.artifactId@
+    version: @project.version@
+  jmx:
+    default-domain: lms-studyingservice-domain
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+  datasource:
+    driver-class-name: @liquibase.driver@
+    url: @build.jooq.datasource.url@
+    username: @build.jooq.datasource.username@
+    password: @build.jooq.datasource.password@
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 600000
+        readTimeout: 600000
