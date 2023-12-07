@@ -19,7 +19,7 @@
         <liquibase.driver>org.postgresql.Driver</liquibase.driver>
         <build.jooq.datasource.username>postgres</build.jooq.datasource.username>
         <build.jooq.datasource.password>admin</build.jooq.datasource.password>
-        <build.jooq.datasource.schema>lms_user</build.jooq.datasource.schema>
+        <build.jooq.datasource.schema>lms_study</build.jooq.datasource.schema>
     </properties>
 
     <dependencies>
@@ -210,7 +210,7 @@
                                         </generate>
                                         <database>
                                             <includes>
-                                                LMS_USER.*
+                                                LMS_STUDY.*
                                             </includes>
                                             <name>org.jooq.meta.postgres.PostgresDatabase</name>
                                             <inputSchema>${build.jooq.datasource.schema}</inputSchema>
