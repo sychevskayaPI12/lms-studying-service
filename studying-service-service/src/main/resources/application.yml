@@ -27,3 +27,6 @@ feign:
       default:
         connectTimeout: 600000
         readTimeout: 600000
+
+services:
+  user-service-url: ${SECURITY_SERVICE_URL:http://localhost:8081/user-service-service}
