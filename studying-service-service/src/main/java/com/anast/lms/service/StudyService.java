@@ -1,4 +1,4 @@
-package com.anast.lms.service.external.user;
+package com.anast.lms.service;
 
 import com.anast.lms.generated.jooq.tables.records.GroupRecord;
 import com.anast.lms.repository.StudyRepository;
@@ -21,6 +21,14 @@ public class StudyService {
         short year = groupRecord.getEntryYear();
         int currentYear = LocalDate.now().getYear();
         return currentYear - year + getAdditionalSemCoef();
+    }
+
+    public void getStudentCourses(String groupCode, Boolean isActive) {
+        GroupRecord group = repository.getGroup(groupCode);
+        int studentCourseNum = calcStudentCourse(groupCode);
+        int currentStudentSemester = studentCourseNum * 2 - getAdditionalSemCoef();
+
+        repository.getStudentCourses(group, currentStudentSemester, isActive);
     }
 
     private int getAdditionalSemCoef() {
