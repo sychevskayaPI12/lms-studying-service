@@ -51,6 +51,12 @@ public class StudyService {
         return courses;
     }
 
+    public List<Course> getTeacherCourses(String teacherLogin, String specialty,
+                                          String form, String stage, Boolean searchActive) {
+        return repository.getTeacherCourses(teacherLogin, specialty, form, stage, searchActive);
+
+    }
+
     private Map<String, UserDetail> getTeachersMap(Set<String> logins) {
         Map<String, UserDetail> teachersMap = new HashMap<>();
         for (String login : logins) {

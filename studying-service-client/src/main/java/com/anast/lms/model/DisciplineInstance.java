@@ -19,15 +19,19 @@ public class DisciplineInstance extends Discipline {
     @JsonProperty("stage_code")
     private String stageCode;
 
+    @JsonProperty("stage_name")
+    private String stageName;
+
     @JsonProperty("study_form_code")
     private String studyFormCode;
 
+    @JsonProperty("study_form_short_name")
+    private String studyFormShortName;
 
-    //todo teachers
 
     public DisciplineInstance(Integer id, Integer disciplineId, String title, String description,
                               String specialty, short semester, boolean isExamination, String stageCode,
-                              String studyFormCode) {
+                              String stageName, String studyFormCode, String studyFormShortName) {
 
         super(disciplineId, title, description);
         this.id = id;
@@ -35,7 +39,9 @@ public class DisciplineInstance extends Discipline {
         this.semester = semester;
         this.isExamination = isExamination;
         this.stageCode = stageCode;
+        this.stageName = stageName;
         this.studyFormCode = studyFormCode;
+        this.studyFormShortName = studyFormShortName;
     }
 
     public DisciplineInstance() {
@@ -88,5 +94,21 @@ public class DisciplineInstance extends Discipline {
 
     public void setStudyFormCode(String studyFormCode) {
         this.studyFormCode = studyFormCode;
+    }
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
+
+    public String getStudyFormShortName() {
+        return studyFormShortName;
+    }
+
+    public void setStudyFormShortName(String studyFormShortName) {
+        this.studyFormShortName = studyFormShortName;
     }
 }

@@ -17,7 +17,13 @@ public class StudyController implements StudyRestService {
     }
 
     @Override
-    public List<Course> getStudentCourser(String groupCode, Boolean isActive) {
+    public List<Course> getStudentCourses(String groupCode, Boolean isActive) {
         return studyService.getStudentCourses(groupCode, isActive);
+    }
+
+    @Override
+    public List<Course> getTeacherCourses(String teacherLogin, String specialty, String form, String stage,
+                                          Boolean searchActive) {
+        return studyService.getTeacherCourses(teacherLogin, specialty, form, stage, searchActive);
     }
 }

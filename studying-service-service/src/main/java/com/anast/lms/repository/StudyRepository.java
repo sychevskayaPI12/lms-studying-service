@@ -30,6 +30,9 @@ public class StudyRepository {
         return context.selectFrom(Tables.GROUP).where(GROUP.CODE.eq(groupCode)).fetchAny();
     }
 
+    /**
+     * Выборка курсов для студента
+     */
     public List<Course> getStudentCourses(GroupRecord group, int semester, Boolean searchActive) {
 
         Condition condition = DSL.trueCondition();
@@ -38,29 +41,74 @@ public class StudyRepository {
         condition = condition.and(DISCIPLINE.STAGE_CODE.eq(group.getStageCode()));
         condition = condition.and(DISCIPLINE.STUDY_FORM.eq(group.getStudyFormCode()));
 
+        if(searchActive) {
+            condition = condition.and(DISCIPLINE.SEMESTER.eq((short) semester));
+        }
+
+        return getCourses(condition, searchActive);
+    }
+
+    /**
+     * Выборка курсов для преподавателя
+     */
+    public List<Course> getTeacherCourses(String teacherLogin, String specialty,
+                                          String form, String stage, Boolean searchActive) {
+
+        Integer teacherId = context.select(TEACHER.ID)
+                .from(TEACHER)
+                .where(TEACHER.LOGIN.eq(teacherLogin)).fetchAny().component1();
+        List<Integer> disciplineIds = context.select(TEACHER_DISCIPLINE_LINK.DISCIPLINE_ID)
+                .from(TEACHER_DISCIPLINE_LINK)
+                .where(TEACHER_DISCIPLINE_LINK.TEACHER_ID.eq(teacherId))
+                .fetch().getValues(TEACHER_DISCIPLINE_LINK.DISCIPLINE_ID);
+
+        Condition condition = DSL.trueCondition();
+        condition = condition.and(DISCIPLINE.ID.in(disciplineIds));
+
+        if(specialty != null) {
+            condition = condition.and(DISCIPLINE.SPECIALTY_CODE.containsIgnoreCase(specialty));
+        }
+        if(form != null) {
+            condition = condition.and(DISCIPLINE.STUDY_FORM.containsIgnoreCase(form));
+        }
+        if(stage != null) {
+            condition = condition.and(DISCIPLINE.STAGE_CODE.containsIgnoreCase(stage));
+        }
+
+        return getCourses(condition, searchActive);
+
+
+    }
+
+    private List<Course> getCourses(Condition condition, Boolean searchActive) {
         //если null, ищем все
         if(searchActive != null) {
             if(searchActive) {
                 condition = condition.and(COURSE.START_DATE.le(LocalDate.now()));
                 condition = condition.and(COURSE.END_DATE.ge(LocalDate.now()));
-                condition = condition.and(DISCIPLINE.SEMESTER.eq((short) semester));
             } else {
                 condition = condition.and(COURSE.END_DATE.lessThan(LocalDate.now()));
             }
         }
 
         return context.selectFrom(COURSE
-                    .leftJoin(DISCIPLINE).on(COURSE.DISCIPLINE_ID.eq(DISCIPLINE.ID))
-                    .leftJoin(DISCIPLINE_DESCRIPTOR).on(DISCIPLINE.DISCIPLINE_DESCR_ID.eq(DISCIPLINE_DESCRIPTOR.ID)))
+                .leftJoin(DISCIPLINE).on(COURSE.DISCIPLINE_ID.eq(DISCIPLINE.ID))
+                .leftJoin(DISCIPLINE_DESCRIPTOR).on(DISCIPLINE.DISCIPLINE_DESCR_ID.eq(DISCIPLINE_DESCRIPTOR.ID)))
                 .where(condition)
                 .fetch(this::mapCourseRecord);
     }
 
     private Course mapCourseRecord(Record r) {
 
+        String stageName = context.selectFrom(STAGE)
+                .where(STAGE.CODE.eq(r.getValue(DISCIPLINE.STAGE_CODE)))
+                .fetchAny().getTitle();
+        String studyFormName = context.selectFrom(STUDY_FORM)
+                .where(STUDY_FORM.CODE.eq(r.getValue(DISCIPLINE.STUDY_FORM)))
+                .fetchAny().getDescription();
+
         DisciplineInstance disciplineInstance = new DisciplineInstance(
                 r.getValue(DISCIPLINE.ID),
-
                 r.getValue(DISCIPLINE_DESCRIPTOR.ID),
                 r.getValue(DISCIPLINE_DESCRIPTOR.TITLE),
                 r.getValue(DISCIPLINE_DESCRIPTOR.DESCRIPTION),
@@ -68,7 +116,9 @@ public class StudyRepository {
                 r.getValue(DISCIPLINE.SEMESTER),
                 r.getValue(DISCIPLINE.IS_EXAMINATION),
                 r.getValue(DISCIPLINE.STAGE_CODE),
-                r.getValue(DISCIPLINE.STUDY_FORM));
+                stageName,
+                r.getValue(DISCIPLINE.STUDY_FORM),
+                studyFormName);
 
         Course course = new Course(
                 r.getValue(COURSE.ID),
