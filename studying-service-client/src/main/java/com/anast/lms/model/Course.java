@@ -8,6 +8,8 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 public class Course {
 
@@ -28,6 +30,12 @@ public class Course {
 
     @JsonProperty("discipline")
     private DisciplineInstance discipline;
+
+    @JsonProperty("teachers_login")
+    private List<String> teacherLogins;
+
+    @JsonProperty("teachers")
+    private Map<String, String> teachers;
 
     public Course() { }
 
@@ -68,5 +76,21 @@ public class Course {
 
     public void setDiscipline(DisciplineInstance discipline) {
         this.discipline = discipline;
+    }
+
+    public List<String> getTeacherLogins() {
+        return teacherLogins;
+    }
+
+    public void setTeacherLogins(List<String> teacherLogins) {
+        this.teacherLogins = teacherLogins;
+    }
+
+    public Map<String, String> getTeachers() {
+        return teachers;
+    }
+
+    public void setTeachers(Map<String, String> teachers) {
+        this.teachers = teachers;
     }
 }

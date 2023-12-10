@@ -1,8 +1,11 @@
 package com.anast.lms.controller;
 
 import com.anast.lms.client.StudyRestService;
+import com.anast.lms.model.Course;
 import com.anast.lms.service.StudyService;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class StudyController implements StudyRestService {
@@ -14,7 +17,7 @@ public class StudyController implements StudyRestService {
     }
 
     @Override
-    public void getStudentCourser(String groupCode, Boolean isActive) {
-        studyService.getStudentCourses(groupCode, isActive);
+    public List<Course> getStudentCourser(String groupCode, Boolean isActive) {
+        return studyService.getStudentCourses(groupCode, isActive);
     }
 }
