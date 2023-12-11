@@ -19,4 +19,7 @@ public interface StudyRestService {
                                    @RequestParam(value = "form", required = false) String form,
                                    @RequestParam(value = "stage", required = false) String stage,
                                    @RequestParam(value = "is_active", required = false) Boolean searchActive);
+
+    @GetMapping("/study/specialties")
+    List<String> getSpecialties();
 }

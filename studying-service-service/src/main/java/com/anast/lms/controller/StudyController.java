@@ -26,4 +26,9 @@ public class StudyController implements StudyRestService {
                                           Boolean searchActive) {
         return studyService.getTeacherCourses(teacherLogin, specialty, form, stage, searchActive);
     }
+
+    @Override
+    public List<String> getSpecialties() {
+        return studyService.getSpecialties();
+    }
 }

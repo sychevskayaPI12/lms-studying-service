@@ -57,6 +57,10 @@ public class StudyService {
 
     }
 
+    public List<String> getSpecialties() {
+        return repository.getSpecialties();
+    }
+
     private Map<String, UserDetail> getTeachersMap(Set<String> logins) {
         Map<String, UserDetail> teachersMap = new HashMap<>();
         for (String login : logins) {

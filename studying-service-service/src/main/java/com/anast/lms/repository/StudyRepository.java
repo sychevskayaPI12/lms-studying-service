@@ -41,7 +41,7 @@ public class StudyRepository {
         condition = condition.and(DISCIPLINE.STAGE_CODE.eq(group.getStageCode()));
         condition = condition.and(DISCIPLINE.STUDY_FORM.eq(group.getStudyFormCode()));
 
-        if(searchActive) {
+        if(searchActive != null && searchActive) {
             condition = condition.and(DISCIPLINE.SEMESTER.eq((short) semester));
         }
 
@@ -96,6 +96,12 @@ public class StudyRepository {
                 .leftJoin(DISCIPLINE_DESCRIPTOR).on(DISCIPLINE.DISCIPLINE_DESCR_ID.eq(DISCIPLINE_DESCRIPTOR.ID)))
                 .where(condition)
                 .fetch(this::mapCourseRecord);
+    }
+
+    public List<String> getSpecialties() {
+        return context.selectFrom(SPECIALTY)
+                .fetch()
+                .getValues(SPECIALTY.CODE);
     }
 
     private Course mapCourseRecord(Record r) {
