@@ -1,6 +1,7 @@
 package com.anast.lms.client;
 
 import com.anast.lms.model.Course;
+import com.anast.lms.model.CourseFullInfoResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,4 +23,7 @@ public interface StudyRestService {
 
     @GetMapping("/study/specialties")
     List<String> getSpecialties();
+
+    @GetMapping("/study/{id}/course")
+    CourseFullInfoResponse getCourseFullInfo(@PathVariable("id") Integer id);
 }

@@ -2,7 +2,9 @@ package com.anast.lms.repository;
 
 import com.anast.lms.generated.jooq.Tables;
 import com.anast.lms.generated.jooq.tables.records.GroupRecord;
+import com.anast.lms.generated.jooq.tables.records.ModuleRecord;
 import com.anast.lms.model.Course;
+import com.anast.lms.model.CourseModule;
 import com.anast.lms.model.DisciplineInstance;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -12,6 +14,7 @@ import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.LinkedList;
 import java.util.List;
 
 import static com.anast.lms.generated.jooq.Tables.*;
@@ -104,6 +107,20 @@ public class StudyRepository {
                 .getValues(SPECIALTY.CODE);
     }
 
+    public Course getCourseById(Integer id) {
+        return context.selectFrom(COURSE
+                .leftJoin(DISCIPLINE).on(COURSE.DISCIPLINE_ID.eq(DISCIPLINE.ID))
+                .leftJoin(DISCIPLINE_DESCRIPTOR).on(DISCIPLINE.DISCIPLINE_DESCR_ID.eq(DISCIPLINE_DESCRIPTOR.ID)))
+                .where(COURSE.ID.eq(id))
+                .fetchAny(this::mapCourseRecord);
+    }
+
+    public List<CourseModule> getCourseModules(Integer courseId) {
+        return context.selectFrom(MODULE).where(MODULE.COURSE_ID.eq(courseId))
+                .orderBy(MODULE.MODULE_ORDER)
+                .fetch(this::mapModule);
+    }
+
     private Course mapCourseRecord(Record r) {
 
         String stageName = context.selectFrom(STAGE)
@@ -140,5 +157,13 @@ public class StudyRepository {
 
         course.setTeacherLogins(teacherLogins);
         return course;
+    }
+
+    private CourseModule mapModule(ModuleRecord record) {
+        return new CourseModule(
+                record.getId(),
+                record.getTitle(),
+                record.getContent(),
+                record.getModuleOrder());
     }
 }

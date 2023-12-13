@@ -2,6 +2,7 @@ package com.anast.lms.controller;
 
 import com.anast.lms.client.StudyRestService;
 import com.anast.lms.model.Course;
+import com.anast.lms.model.CourseFullInfoResponse;
 import com.anast.lms.service.StudyService;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,5 +31,10 @@ public class StudyController implements StudyRestService {
     @Override
     public List<String> getSpecialties() {
         return studyService.getSpecialties();
+    }
+
+    @Override
+    public CourseFullInfoResponse getCourseFullInfo(Integer id) {
+        return studyService.getCourseFullInfoById(id);
     }
 }

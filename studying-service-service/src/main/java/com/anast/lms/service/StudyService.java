@@ -2,6 +2,8 @@ package com.anast.lms.service;
 
 import com.anast.lms.generated.jooq.tables.records.GroupRecord;
 import com.anast.lms.model.Course;
+import com.anast.lms.model.CourseFullInfoResponse;
+import com.anast.lms.model.CourseModule;
 import com.anast.lms.model.UserDetail;
 import com.anast.lms.repository.StudyRepository;
 import com.anast.lms.service.external.user.UserServiceClient;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class StudyService {
@@ -60,6 +63,20 @@ public class StudyService {
     public List<String> getSpecialties() {
         return repository.getSpecialties();
     }
+
+    public CourseFullInfoResponse getCourseFullInfoById(Integer id) {
+
+        Course course = repository.getCourseById(id);
+        Map<String, UserDetail> teachersMap = getTeachersMap(new HashSet<>(course.getTeacherLogins()));
+        course.setTeachers(
+                teachersMap.entrySet().stream().collect(
+                        Collectors.toMap(Map.Entry::getKey, e-> e.getValue().getFullName())
+                )
+        );
+        List<CourseModule> modules = repository.getCourseModules(id);
+        return new CourseFullInfoResponse(course, modules);
+    }
+
 
     private Map<String, UserDetail> getTeachersMap(Set<String> logins) {
         Map<String, UserDetail> teachersMap = new HashMap<>();
