@@ -8,6 +8,7 @@
     <include file="003_study.sql" relativeToChangelogFile="true"/>
     <include file="003_study_courses.sql" relativeToChangelogFile="true"/>
     <include file="004_study_modules.sql" relativeToChangelogFile="true"/>
+    <include file="005_study_classes.sql" relativeToChangelogFile="true"/>
 
 
 

@@ -6,6 +6,7 @@ import com.anast.lms.generated.jooq.tables.records.ModuleRecord;
 import com.anast.lms.model.Course;
 import com.anast.lms.model.CourseModule;
 import com.anast.lms.model.DisciplineInstance;
+import com.anast.lms.model.SchedulerItem;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -120,6 +121,29 @@ public class StudyRepository {
                 .orderBy(MODULE.MODULE_ORDER)
                 .fetch(this::mapModule);
     }
+
+    /**
+     * Расписание студента на определенный день
+     * @param group
+     * @return
+     */
+    public /*List<SchedulerItem>*/ void getSchedulerDaily(GroupRecord group, short dayOfWeek) {
+        context.selectFrom(STATIC_SCHEDULE
+                .leftJoin(CLASS).on(STATIC_SCHEDULE.CLASS_ID.eq(CLASS.ID))
+                .leftJoin(DISCIPLINE).on(CLASS.DISCIPLINE_ID.eq(DISCIPLINE.ID)))
+                .where(STATIC_SCHEDULE.DAY_OF_WEEK.eq(dayOfWeek))
+                .and(DISCIPLINE.SPECIALTY_CODE.eq(group.getSpecialtyCode()))
+                .and(DISCIPLINE.STAGE_CODE.eq(group.getStageCode()))
+                .and(DISCIPLINE.STUDY_FORM.eq(group.getStudyFormCode()))
+                .fetch();
+        //todo map
+
+    }
+    //todo get TeacherDaily
+
+    //todo studentWeek
+    //todo teacher week
+    //todo! а вообще можно сделать универсально. Сначала определить курсы студента/преподавателя, по ним сразу искать пары
 
     private Course mapCourseRecord(Record r) {
 
