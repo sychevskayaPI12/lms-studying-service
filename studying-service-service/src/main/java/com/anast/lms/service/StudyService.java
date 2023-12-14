@@ -1,10 +1,7 @@
 package com.anast.lms.service;
 
 import com.anast.lms.generated.jooq.tables.records.GroupRecord;
-import com.anast.lms.model.Course;
-import com.anast.lms.model.CourseFullInfoResponse;
-import com.anast.lms.model.CourseModule;
-import com.anast.lms.model.UserDetail;
+import com.anast.lms.model.*;
 import com.anast.lms.repository.StudyRepository;
 import com.anast.lms.service.external.user.UserServiceClient;
 import org.springframework.stereotype.Service;
@@ -77,6 +74,46 @@ public class StudyService {
         return new CourseFullInfoResponse(course, modules);
     }
 
+    /**
+     * Получить список занятий студента, сгруппированный по дням недели
+     *
+     * @param groupCode группа студента
+     * @param isCurrentDay признак, искать на сегодня или на неделю
+     * @return список занятий, сгруппированный по дням недели
+     */
+    public WeekScheduler getStudentScheduler(String groupCode, Boolean isCurrentDay) {
+        GroupRecord group = repository.getGroup(groupCode);
+        Short dayOfWeek = isCurrentDay ? (short) LocalDate.now().getDayOfWeek().getValue() : null;
+
+        List<SchedulerItem> items = repository.getSchedulerItems(group, dayOfWeek);
+        Map<Short, List<SchedulerItem>> itemsWeekMap = items.stream()
+                .collect(Collectors.groupingBy(SchedulerItem::getDayOfWeek));
+        return new WeekScheduler(itemsWeekMap);
+    }
+
+    /**
+     * Получить список занятий преподавателя, сгруппированный по дням недели
+     *
+     * @param login логин преподавателя
+     * @param isCurrentDay признак, искать на сегодня или на неделю
+     * @return список занятий, сгруппированный по дням недели
+     */
+    public WeekScheduler getTeacherSchedule(String login, Boolean isCurrentDay) {
+        Short dayOfWeek = isCurrentDay ? (short) LocalDate.now().getDayOfWeek().getValue() : null;
+        List<SchedulerItem> items = repository.getSchedulerItems(login, dayOfWeek);
+
+        //если отдельная группа не указана, наполняем списком групп направления
+        for (SchedulerItem item : items) {
+            if (item.getGroups() == null || item.getGroups().isEmpty()) {
+                List<String> groups = repository.getGroups(item.getDiscipline());
+                item.setGroups(String.join(", ", groups));
+            }
+        }
+        Map<Short, List<SchedulerItem>> itemsWeekMap = items.stream()
+                .collect(Collectors.groupingBy(SchedulerItem::getDayOfWeek));
+
+        return new WeekScheduler(itemsWeekMap);
+    }
 
     private Map<String, UserDetail> getTeachersMap(Set<String> logins) {
         Map<String, UserDetail> teachersMap = new HashMap<>();

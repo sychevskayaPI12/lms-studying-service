@@ -3,19 +3,14 @@ package com.anast.lms.repository;
 import com.anast.lms.generated.jooq.Tables;
 import com.anast.lms.generated.jooq.tables.records.GroupRecord;
 import com.anast.lms.generated.jooq.tables.records.ModuleRecord;
-import com.anast.lms.model.Course;
-import com.anast.lms.model.CourseModule;
-import com.anast.lms.model.DisciplineInstance;
-import com.anast.lms.model.SchedulerItem;
+import com.anast.lms.model.*;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.Result;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.LinkedList;
 import java.util.List;
 
 import static com.anast.lms.generated.jooq.Tables.*;
@@ -58,13 +53,7 @@ public class StudyRepository {
     public List<Course> getTeacherCourses(String teacherLogin, String specialty,
                                           String form, String stage, Boolean searchActive) {
 
-        Integer teacherId = context.select(TEACHER.ID)
-                .from(TEACHER)
-                .where(TEACHER.LOGIN.eq(teacherLogin)).fetchAny().component1();
-        List<Integer> disciplineIds = context.select(TEACHER_DISCIPLINE_LINK.DISCIPLINE_ID)
-                .from(TEACHER_DISCIPLINE_LINK)
-                .where(TEACHER_DISCIPLINE_LINK.TEACHER_ID.eq(teacherId))
-                .fetch().getValues(TEACHER_DISCIPLINE_LINK.DISCIPLINE_ID);
+        List<Integer> disciplineIds = getDisciplinesByTeacherId(teacherLogin);
 
         Condition condition = DSL.trueCondition();
         condition = condition.and(DISCIPLINE.ID.in(disciplineIds));
@@ -102,6 +91,16 @@ public class StudyRepository {
                 .fetch(this::mapCourseRecord);
     }
 
+    private List<Integer> getDisciplinesByTeacherId(String teacherLogin) {
+        Integer teacherId = context.select(TEACHER.ID)
+                .from(TEACHER)
+                .where(TEACHER.LOGIN.eq(teacherLogin)).fetchAny().component1();
+        return context.select(TEACHER_DISCIPLINE_LINK.DISCIPLINE_ID)
+                .from(TEACHER_DISCIPLINE_LINK)
+                .where(TEACHER_DISCIPLINE_LINK.TEACHER_ID.eq(teacherId))
+                .fetch().getValues(TEACHER_DISCIPLINE_LINK.DISCIPLINE_ID);
+    }
+
     public List<String> getSpecialties() {
         return context.selectFrom(SPECIALTY)
                 .fetch()
@@ -123,55 +122,64 @@ public class StudyRepository {
     }
 
     /**
-     * Расписание студента на определенный день
-     * @param group
+     * Расписание студента на день недели. Если день не передан, то на неделю
+     */
+    public List<SchedulerItem> getSchedulerItems(GroupRecord group, Short dayOfWeek) {
+
+        Condition condition = DSL.trueCondition();
+        condition = condition.and(DISCIPLINE.SPECIALTY_CODE.eq(group.getSpecialtyCode()))
+                .and(DISCIPLINE.STAGE_CODE.eq(group.getStageCode()))
+                .and(DISCIPLINE.STUDY_FORM.eq(group.getStudyFormCode()));
+        if(dayOfWeek != null) {
+            condition = condition.and(STATIC_SCHEDULE.DAY_OF_WEEK.eq(dayOfWeek));
+        }
+        return context.selectFrom(STATIC_SCHEDULE
+                .leftJoin(STUDY_CLASS).on(STATIC_SCHEDULE.CLASS_ID.eq(STUDY_CLASS.ID))
+                .leftJoin(DISCIPLINE).on(STUDY_CLASS.DISCIPLINE_ID.eq(DISCIPLINE.ID))
+                .leftJoin(DISCIPLINE_DESCRIPTOR).on(DISCIPLINE_DESCRIPTOR.ID.eq(DISCIPLINE.DISCIPLINE_DESCR_ID)))
+                .where(condition)
+                .fetch(this::mapScheduleItem);
+    }
+
+    public List<SchedulerItem> getSchedulerItems(String teacherLogin, Short dayOfWeek) {
+
+        List<Integer> disciplineIds = getDisciplinesByTeacherId(teacherLogin);
+
+        Condition condition = DSL.trueCondition();
+        condition = condition.and(DISCIPLINE.ID.in(disciplineIds));
+
+        if(dayOfWeek != null) {
+            condition = condition.and(STATIC_SCHEDULE.DAY_OF_WEEK.eq(dayOfWeek));
+        }
+        return context.selectFrom(STATIC_SCHEDULE
+                .leftJoin(STUDY_CLASS).on(STATIC_SCHEDULE.CLASS_ID.eq(STUDY_CLASS.ID))
+                .leftJoin(DISCIPLINE).on(STUDY_CLASS.DISCIPLINE_ID.eq(DISCIPLINE.ID))
+                .leftJoin(DISCIPLINE_DESCRIPTOR).on(DISCIPLINE_DESCRIPTOR.ID.eq(DISCIPLINE.DISCIPLINE_DESCR_ID)))
+                .where(condition)
+                .fetch(this::mapScheduleItem);
+    }
+
+    /**
+     * Получть список групп потока
+     * @param discipline
      * @return
      */
-    public /*List<SchedulerItem>*/ void getSchedulerDaily(GroupRecord group, short dayOfWeek) {
-        context.selectFrom(STATIC_SCHEDULE
-                .leftJoin(CLASS).on(STATIC_SCHEDULE.CLASS_ID.eq(CLASS.ID))
-                .leftJoin(DISCIPLINE).on(CLASS.DISCIPLINE_ID.eq(DISCIPLINE.ID)))
-                .where(STATIC_SCHEDULE.DAY_OF_WEEK.eq(dayOfWeek))
-                .and(DISCIPLINE.SPECIALTY_CODE.eq(group.getSpecialtyCode()))
-                .and(DISCIPLINE.STAGE_CODE.eq(group.getStageCode()))
-                .and(DISCIPLINE.STUDY_FORM.eq(group.getStudyFormCode()))
-                .fetch();
-        //todo map
-
+    public List<String> getGroups(DisciplineInstance discipline) {
+        return context.selectFrom(GROUP)
+                .where(GROUP.SPECIALTY_CODE.eq(discipline.getSpecialty())
+                .and(GROUP.STAGE_CODE.eq(discipline.getStageCode()))
+                .and(GROUP.STUDY_FORM_CODE.eq(discipline.getStudyFormCode())))
+                //todo вычислить год поступления по семестру, добавить
+                .fetch().getValues(GROUP.CODE);
     }
-    //todo get TeacherDaily
-
-    //todo studentWeek
-    //todo teacher week
-    //todo! а вообще можно сделать универсально. Сначала определить курсы студента/преподавателя, по ним сразу искать пары
 
     private Course mapCourseRecord(Record r) {
-
-        String stageName = context.selectFrom(STAGE)
-                .where(STAGE.CODE.eq(r.getValue(DISCIPLINE.STAGE_CODE)))
-                .fetchAny().getTitle();
-        String studyFormName = context.selectFrom(STUDY_FORM)
-                .where(STUDY_FORM.CODE.eq(r.getValue(DISCIPLINE.STUDY_FORM)))
-                .fetchAny().getDescription();
-
-        DisciplineInstance disciplineInstance = new DisciplineInstance(
-                r.getValue(DISCIPLINE.ID),
-                r.getValue(DISCIPLINE_DESCRIPTOR.ID),
-                r.getValue(DISCIPLINE_DESCRIPTOR.TITLE),
-                r.getValue(DISCIPLINE_DESCRIPTOR.DESCRIPTION),
-                r.getValue(DISCIPLINE.SPECIALTY_CODE),
-                r.getValue(DISCIPLINE.SEMESTER),
-                r.getValue(DISCIPLINE.IS_EXAMINATION),
-                r.getValue(DISCIPLINE.STAGE_CODE),
-                stageName,
-                r.getValue(DISCIPLINE.STUDY_FORM),
-                studyFormName);
 
         Course course = new Course(
                 r.getValue(COURSE.ID),
                 r.getValue(COURSE.START_DATE),
                 r.getValue(COURSE.END_DATE),
-                disciplineInstance
+                mapDisciplineInstance(r)
         );
 
         List<String> teacherLogins = context.selectFrom(TEACHER
@@ -183,11 +191,43 @@ public class StudyRepository {
         return course;
     }
 
+    private DisciplineInstance mapDisciplineInstance(Record r) {
+        String stageName = context.selectFrom(STAGE)
+                .where(STAGE.CODE.eq(r.getValue(DISCIPLINE.STAGE_CODE)))
+                .fetchAny().getTitle();
+        String studyFormName = context.selectFrom(STUDY_FORM)
+                .where(STUDY_FORM.CODE.eq(r.getValue(DISCIPLINE.STUDY_FORM)))
+                .fetchAny().getDescription();
+        return new DisciplineInstance(
+                r.getValue(DISCIPLINE.ID),
+                r.getValue(DISCIPLINE_DESCRIPTOR.ID),
+                r.getValue(DISCIPLINE_DESCRIPTOR.TITLE),
+                r.getValue(DISCIPLINE_DESCRIPTOR.DESCRIPTION),
+                r.getValue(DISCIPLINE.SPECIALTY_CODE),
+                r.getValue(DISCIPLINE.SEMESTER),
+                r.getValue(DISCIPLINE.IS_EXAMINATION),
+                r.getValue(DISCIPLINE.STAGE_CODE),
+                stageName,
+                r.getValue(DISCIPLINE.STUDY_FORM),
+                studyFormName);
+    }
+
     private CourseModule mapModule(ModuleRecord record) {
         return new CourseModule(
                 record.getId(),
                 record.getTitle(),
                 record.getContent(),
                 record.getModuleOrder());
+    }
+
+    private SchedulerItem mapScheduleItem(Record record) {
+        return new SchedulerItem(
+                mapDisciplineInstance(record),
+                record.getValue(STATIC_SCHEDULE.CLASSROOM),
+                record.getValue(STUDY_CLASS.GROUP_CODE),
+                ClassType.getEnum(record.getValue(STUDY_CLASS.CLASS_TYPE_CODE)),
+                record.getValue(STATIC_SCHEDULE.LESSON_NUMBER),
+                "",
+                record.getValue(STATIC_SCHEDULE.DAY_OF_WEEK));
     }
 }
