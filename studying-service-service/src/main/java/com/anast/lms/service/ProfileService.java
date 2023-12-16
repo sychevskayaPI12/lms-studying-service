@@ -34,7 +34,9 @@ public class ProfileService {
         profileInfo.setTeacherInfo(teacherInfo);
 
         StudentProfileInfo studentInfo = profileRepository.getStudentInfo(login);
-        studentInfo.setCourse(studyService.calcStudentCourse(studentInfo.getGroupCode()));
+        if(studentInfo != null) {
+            studentInfo.setCourse(studyService.calcStudentCourse(studentInfo.getGroupCode()));
+        }
         profileInfo.setStudentInfo(studentInfo);
 
         return profileInfo;
