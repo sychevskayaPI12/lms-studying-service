@@ -2,6 +2,9 @@ package com.anast.lms.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CourseModule {
 
     @JsonProperty("id")
@@ -16,14 +19,18 @@ public class CourseModule {
     @JsonProperty("order")
     private short order;
 
+    @JsonProperty("resources")
+    private List<ModuleResource> moduleResources = new ArrayList<>();
+
     public CourseModule() {
     }
 
-    public CourseModule(Integer id, String title, String content, short order) {
+    public CourseModule(Integer id, String title, String content, short order, List<ModuleResource> moduleResources) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.order = order;
+        this.moduleResources = moduleResources;
     }
 
     public Integer getId() {
@@ -56,5 +63,13 @@ public class CourseModule {
 
     public void setOrder(short order) {
         this.order = order;
+    }
+
+    public List<ModuleResource> getResources() {
+        return moduleResources;
+    }
+
+    public void setResources(List<ModuleResource> moduleResources) {
+        this.moduleResources = moduleResources;
     }
 }

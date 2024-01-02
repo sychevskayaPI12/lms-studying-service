@@ -3,6 +3,7 @@ package com.anast.lms.repository;
 import com.anast.lms.generated.jooq.Tables;
 import com.anast.lms.generated.jooq.tables.records.GroupRecord;
 import com.anast.lms.generated.jooq.tables.records.ModuleRecord;
+import com.anast.lms.generated.jooq.tables.records.ModuleResourceRecord;
 import com.anast.lms.generated.jooq.tables.records.TeacherRecord;
 import com.anast.lms.model.*;
 import org.jooq.Condition;
@@ -179,6 +180,15 @@ public class StudyRepository {
         return new TeacherProfileInfo(record.getDegree());
     }
 
+    public List<ModuleResource> getModuleResources(Integer moduleId) {
+        return context.selectFrom(MODULE_RESOURCE)
+                .where(MODULE_RESOURCE.ID.in(
+                        context.select(MODULE_RESOURCE_LINK.RESOURCE_ID).from(MODULE_RESOURCE_LINK)
+                        .where(MODULE_RESOURCE_LINK.MODULE_ID.eq(moduleId))
+                ))
+                .fetch(this::mapModuleResource);
+    }
+
     private Course mapCourseRecord(Record r) {
         return new Course(
                 r.getValue(COURSE.ID),
@@ -217,11 +227,13 @@ public class StudyRepository {
     }
 
     private CourseModule mapModule(ModuleRecord record) {
+        List<ModuleResource> moduleResources = getModuleResources(record.getId());
         return new CourseModule(
                 record.getId(),
                 record.getTitle(),
                 record.getContent(),
-                record.getModuleOrder());
+                record.getModuleOrder(),
+                moduleResources);
     }
 
     private SchedulerItem mapScheduleItem(Record record) {
@@ -232,5 +244,13 @@ public class StudyRepository {
                 ClassType.getEnum(record.getValue(STUDY_CLASS.CLASS_TYPE_CODE)),
                 record.getValue(STATIC_SCHEDULE.LESSON_NUMBER),
                 record.getValue(STATIC_SCHEDULE.DAY_OF_WEEK));
+    }
+
+    private ModuleResource mapModuleResource(ModuleResourceRecord record) {
+        return new ModuleResource(
+                record.getId(),
+                record.getStoreFileName(),
+                record.getDisplayFileName()
+        );
     }
 }

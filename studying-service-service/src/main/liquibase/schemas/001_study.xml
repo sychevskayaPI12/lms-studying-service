@@ -10,6 +10,8 @@
     <include file="004_study_modules.sql" relativeToChangelogFile="true"/>
     <include file="005_study_classes.sql" relativeToChangelogFile="true"/>
     <include file="005_study_classes_fix.sql" relativeToChangelogFile="true"/>
+    <include file="006_study_resources.sql" relativeToChangelogFile="true"/>
+
 
 
 

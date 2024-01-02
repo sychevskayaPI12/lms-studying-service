@@ -4,8 +4,10 @@ import com.anast.lms.generated.jooq.tables.records.GroupRecord;
 import com.anast.lms.model.*;
 import com.anast.lms.repository.StudyRepository;
 import com.anast.lms.service.external.user.UserServiceClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
@@ -16,6 +18,9 @@ public class StudyService {
 
     private final StudyRepository repository;
     private final UserServiceClient userServiceClient;
+
+    @Value("${upload.path}")
+    private String dirPath;
 
     public StudyService(StudyRepository repository, UserServiceClient userServiceClient) {
         this.repository = repository;
@@ -69,6 +74,14 @@ public class StudyService {
                 course.getDiscipline().getTeachers().add(getTeacherProfileInfo(login)));
 
         List<CourseModule> modules = repository.getCourseModules(id);
+
+        //получение файлов
+        modules.forEach(module -> {
+            module.getResources().forEach(res -> {
+                File file = new File(dirPath + "\\" + res.getFileName());
+                res.setFile(file);
+            });
+        });
         return new CourseFullInfoResponse(course, modules);
     }
 
