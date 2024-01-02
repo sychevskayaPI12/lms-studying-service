@@ -19,19 +19,15 @@ public class SchedulerItem {
     @JsonProperty("number")
     private Short number;
 
-    @JsonProperty("teachers")
-    private String teachers;
-
     @JsonProperty("day_of_week")
     private Short dayOfWeek;
 
-    public SchedulerItem(DisciplineInstance discipline, String classRoom, String groups, ClassType classType, Short number, String teachers, Short dayOfWeek) {
+    public SchedulerItem(DisciplineInstance discipline, String classRoom, String groups, ClassType classType, Short number, Short dayOfWeek) {
         this.discipline = discipline;
         this.classRoom = classRoom;
         this.groups = groups;
         this.classType = classType;
         this.number = number;
-        this.teachers = teachers;
         this.dayOfWeek = dayOfWeek;
     }
 
@@ -76,14 +72,6 @@ public class SchedulerItem {
 
     public void setNumber(Short number) {
         this.number = number;
-    }
-
-    public String getTeachers() {
-        return teachers;
-    }
-
-    public void setTeachers(String teachers) {
-        this.teachers = teachers;
     }
 
     public Short getDayOfWeek() {

@@ -3,6 +3,7 @@ package com.anast.lms.repository;
 import com.anast.lms.generated.jooq.Tables;
 import com.anast.lms.generated.jooq.tables.records.GroupRecord;
 import com.anast.lms.generated.jooq.tables.records.ModuleRecord;
+import com.anast.lms.generated.jooq.tables.records.TeacherRecord;
 import com.anast.lms.model.*;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -161,8 +162,8 @@ public class StudyRepository {
 
     /**
      * Получть список групп потока
-     * @param discipline
-     * @return
+     * @param discipline - экземпляр дисциплины. содержит параметры для поиска групп потока
+     * @return список кодов групп
      */
     public List<String> getGroups(DisciplineInstance discipline) {
         return context.selectFrom(GROUP)
@@ -173,22 +174,18 @@ public class StudyRepository {
                 .fetch().getValues(GROUP.CODE);
     }
 
-    private Course mapCourseRecord(Record r) {
+    public TeacherProfileInfo getTeacherProfileInfo(String login) {
+        TeacherRecord record = context.selectFrom(TEACHER).where(TEACHER.LOGIN.eq(login)).fetchAny();
+        return new TeacherProfileInfo(record.getDegree());
+    }
 
-        Course course = new Course(
+    private Course mapCourseRecord(Record r) {
+        return new Course(
                 r.getValue(COURSE.ID),
                 r.getValue(COURSE.START_DATE),
                 r.getValue(COURSE.END_DATE),
                 mapDisciplineInstance(r)
         );
-
-        List<String> teacherLogins = context.selectFrom(TEACHER
-                .leftJoin(TEACHER_DISCIPLINE_LINK).on(TEACHER_DISCIPLINE_LINK.TEACHER_ID.eq(TEACHER.ID)))
-                .where(TEACHER_DISCIPLINE_LINK.DISCIPLINE_ID.eq(course.getDiscipline().getId()))
-                .fetch().getValues(TEACHER.LOGIN);
-
-        course.setTeacherLogins(teacherLogins);
-        return course;
     }
 
     private DisciplineInstance mapDisciplineInstance(Record r) {
@@ -198,6 +195,12 @@ public class StudyRepository {
         String studyFormName = context.selectFrom(STUDY_FORM)
                 .where(STUDY_FORM.CODE.eq(r.getValue(DISCIPLINE.STUDY_FORM)))
                 .fetchAny().getDescription();
+
+        List<String> teacherLogins = context.selectFrom(TEACHER
+                .leftJoin(TEACHER_DISCIPLINE_LINK).on(TEACHER_DISCIPLINE_LINK.TEACHER_ID.eq(TEACHER.ID)))
+                .where(TEACHER_DISCIPLINE_LINK.DISCIPLINE_ID.eq(r.getValue(DISCIPLINE_DESCRIPTOR.ID)))
+                .fetch().getValues(TEACHER.LOGIN);
+
         return new DisciplineInstance(
                 r.getValue(DISCIPLINE.ID),
                 r.getValue(DISCIPLINE_DESCRIPTOR.ID),
@@ -209,7 +212,8 @@ public class StudyRepository {
                 r.getValue(DISCIPLINE.STAGE_CODE),
                 stageName,
                 r.getValue(DISCIPLINE.STUDY_FORM),
-                studyFormName);
+                studyFormName,
+                teacherLogins);
     }
 
     private CourseModule mapModule(ModuleRecord record) {
@@ -227,7 +231,6 @@ public class StudyRepository {
                 record.getValue(STUDY_CLASS.GROUP_CODE),
                 ClassType.getEnum(record.getValue(STUDY_CLASS.CLASS_TYPE_CODE)),
                 record.getValue(STATIC_SCHEDULE.LESSON_NUMBER),
-                "",
                 record.getValue(STATIC_SCHEDULE.DAY_OF_WEEK));
     }
 }

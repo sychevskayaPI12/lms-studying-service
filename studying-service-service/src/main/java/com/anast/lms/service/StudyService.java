@@ -37,16 +37,15 @@ public class StudyService {
         List<Course> courses = repository.getStudentCourses(group, currentStudentSemester, isActive);
 
         Set<String> logins = new HashSet<>();
-        courses.forEach(c -> logins.addAll(c.getTeacherLogins()));
-        Map<String, UserDetail> teachersMap = getTeachersMap(logins);
+        courses.forEach(c -> logins.addAll(c.getDiscipline().getTeacherLogins()));
+        Map<String, UserProfileInfo> teachersMap = getTeachersMap(logins);
 
-        courses.forEach(course -> {
-            Map<String, String> teacherInfo = new HashMap<>();
-            course.getTeacherLogins().forEach(l -> {
-                teacherInfo.put(l, teachersMap.get(l).getFullName());
-            });
-            course.setTeachers(teacherInfo);
-        });
+       courses.forEach(course -> {
+           course.getDiscipline().getTeacherLogins().forEach( login ->
+                   course.getDiscipline().getTeachers().add(teachersMap.get(login))
+           );
+       });
+
 
         return courses;
     }
@@ -64,12 +63,11 @@ public class StudyService {
     public CourseFullInfoResponse getCourseFullInfoById(Integer id) {
 
         Course course = repository.getCourseById(id);
-        Map<String, UserDetail> teachersMap = getTeachersMap(new HashSet<>(course.getTeacherLogins()));
-        course.setTeachers(
-                teachersMap.entrySet().stream().collect(
-                        Collectors.toMap(Map.Entry::getKey, e-> e.getValue().getFullName())
-                )
-        );
+
+        //информация о преподавателях
+        course.getDiscipline().getTeacherLogins().forEach(login ->
+                course.getDiscipline().getTeachers().add(getTeacherProfileInfo(login)));
+
         List<CourseModule> modules = repository.getCourseModules(id);
         return new CourseFullInfoResponse(course, modules);
     }
@@ -86,6 +84,10 @@ public class StudyService {
         Short dayOfWeek = isCurrentDay ? (short) LocalDate.now().getDayOfWeek().getValue() : null;
 
         List<SchedulerItem> items = repository.getSchedulerItems(group, dayOfWeek);
+        //информация о преподавателях
+        items.forEach(item -> item.getDiscipline().getTeacherLogins().forEach(login ->
+                item.getDiscipline().getTeachers().add(getTeacherProfileInfo(login))));
+
         Map<Short, List<SchedulerItem>> itemsWeekMap = items.stream()
                 .collect(Collectors.groupingBy(SchedulerItem::getDayOfWeek));
         return new WeekScheduler(itemsWeekMap);
@@ -115,12 +117,26 @@ public class StudyService {
         return new WeekScheduler(itemsWeekMap);
     }
 
-    private Map<String, UserDetail> getTeachersMap(Set<String> logins) {
-        Map<String, UserDetail> teachersMap = new HashMap<>();
+    private Map<String, UserProfileInfo> getTeachersMap(Set<String> logins) {
+        Map<String, UserProfileInfo> teachersMap = new HashMap<>();
         for (String login : logins) {
-            teachersMap.put(login, userServiceClient.getUserDetail(login));
+            teachersMap.put(login, getTeacherProfileInfo(login));
         }
         return teachersMap;
+    }
+
+    private UserProfileInfo getTeacherProfileInfo(String login) {
+        UserDetail userDetail = userServiceClient.getUserDetail(login);
+        return buildTeacherProfileInfo(userDetail);
+    }
+
+    private UserProfileInfo buildTeacherProfileInfo(UserDetail userDetail) {
+        return new UserProfileInfo(
+                userDetail.getLogin(),
+                userDetail.getFullName(),
+                userDetail.getMail(),
+                null,
+                repository.getTeacherProfileInfo(userDetail.getLogin()));
     }
 
     private int getAdditionalSemCoef() {

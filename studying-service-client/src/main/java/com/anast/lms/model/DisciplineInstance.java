@@ -2,6 +2,9 @@ package com.anast.lms.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DisciplineInstance extends Discipline {
 
     @JsonProperty("id")
@@ -28,10 +31,15 @@ public class DisciplineInstance extends Discipline {
     @JsonProperty("study_form_short_name")
     private String studyFormShortName;
 
+    @JsonProperty("teachers_login")
+    private List<String> teacherLogins = new ArrayList<>();
+
+    @JsonProperty("teachers")
+    private List<UserProfileInfo> teachers = new ArrayList<>();
 
     public DisciplineInstance(Integer id, Integer disciplineId, String title, String description,
                               String specialty, short semester, boolean isExamination, String stageCode,
-                              String stageName, String studyFormCode, String studyFormShortName) {
+                              String stageName, String studyFormCode, String studyFormShortName, List<String> teacherLogins) {
 
         super(disciplineId, title, description);
         this.id = id;
@@ -42,6 +50,7 @@ public class DisciplineInstance extends Discipline {
         this.stageName = stageName;
         this.studyFormCode = studyFormCode;
         this.studyFormShortName = studyFormShortName;
+        this.teacherLogins = teacherLogins;
     }
 
     public DisciplineInstance() {
@@ -110,5 +119,21 @@ public class DisciplineInstance extends Discipline {
 
     public void setStudyFormShortName(String studyFormShortName) {
         this.studyFormShortName = studyFormShortName;
+    }
+
+    public List<String> getTeacherLogins() {
+        return teacherLogins;
+    }
+
+    public void setTeacherLogins(List<String> teacherLogins) {
+        this.teacherLogins = teacherLogins;
+    }
+
+    public List<UserProfileInfo> getTeachers() {
+        return teachers;
+    }
+
+    public void setTeachers(List<UserProfileInfo> teachers) {
+        this.teachers = teachers;
     }
 }
