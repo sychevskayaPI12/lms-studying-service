@@ -3,6 +3,7 @@ package com.anast.lms.controller;
 import com.anast.lms.client.StudyRestService;
 import com.anast.lms.model.Course;
 import com.anast.lms.model.CourseFullInfoResponse;
+import com.anast.lms.model.CourseModule;
 import com.anast.lms.model.WeekScheduler;
 import com.anast.lms.service.StudyService;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,5 +48,10 @@ public class StudyController implements StudyRestService {
     @Override
     public WeekScheduler getTeacherScheduler(String login, Boolean isCurrentDay) {
         return studyService.getTeacherSchedule(login, isCurrentDay);
+    }
+
+    @Override
+    public void updateCourseModules(Integer courseId, List<CourseModule> modules) {
+        studyService.updateCourseModules(modules, courseId);
     }
 }

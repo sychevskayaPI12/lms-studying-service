@@ -6,6 +6,7 @@ import com.anast.lms.repository.StudyRepository;
 import com.anast.lms.service.external.user.UserServiceClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -128,6 +129,18 @@ public class StudyService {
                 .collect(Collectors.groupingBy(SchedulerItem::getDayOfWeek));
 
         return new WeekScheduler(itemsWeekMap);
+    }
+
+    @Transactional
+    public void updateCourseModules(List<CourseModule> modules, Integer courseId) {
+        for(CourseModule module : modules) {
+
+            if(module.getId() == null) {
+                repository.createCourseModule(module, courseId);
+            } else {
+                repository.updateCourseModule(module);
+            }
+        }
     }
 
     private Map<String, UserProfileInfo> getTeachersMap(Set<String> logins) {

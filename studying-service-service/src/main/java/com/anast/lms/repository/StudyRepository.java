@@ -189,6 +189,24 @@ public class StudyRepository {
                 .fetch(this::mapModuleResource);
     }
 
+    public void updateCourseModule(CourseModule module) {
+        context.update(MODULE)
+                .set(MODULE.TITLE, module.getTitle())
+                .set(MODULE.MODULE_ORDER, module.getOrder())
+                .set(MODULE.CONTENT, module.getContent())
+                .where(MODULE.ID.eq(module.getId()))
+                .execute();
+    }
+
+    public void createCourseModule(CourseModule module, Integer courseId) {
+        context.insertInto(MODULE)
+                .set(MODULE.TITLE, module.getTitle())
+                .set(MODULE.MODULE_ORDER, module.getOrder())
+                .set(MODULE.CONTENT, module.getContent())
+                .set(MODULE.COURSE_ID, courseId)
+                .execute();
+    }
+
     private Course mapCourseRecord(Record r) {
         return new Course(
                 r.getValue(COURSE.ID),

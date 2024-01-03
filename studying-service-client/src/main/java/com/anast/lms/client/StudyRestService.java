@@ -2,6 +2,7 @@ package com.anast.lms.client;
 
 import com.anast.lms.model.Course;
 import com.anast.lms.model.CourseFullInfoResponse;
+import com.anast.lms.model.CourseModule;
 import com.anast.lms.model.WeekScheduler;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,4 +36,8 @@ public interface StudyRestService {
     @GetMapping("/study/scheduler/{login}/teacher")
     WeekScheduler getTeacherScheduler(@PathVariable("login") String login,
                                       @RequestParam("is_current_day") Boolean isCurrentDay);
+
+    @PostMapping("/study/{id}/course/modules")
+    void updateCourseModules(@PathVariable("id") Integer courseId,
+                             @RequestBody List<CourseModule> modules);
 }
