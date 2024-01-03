@@ -131,16 +131,26 @@ public class StudyService {
         return new WeekScheduler(itemsWeekMap);
     }
 
+    /**
+     * Обновление информации о модулях курса: редактирование и удаление существующих, добавление новых
+     *
+     */
     @Transactional
-    public void updateCourseModules(List<CourseModule> modules, Integer courseId) {
-        for(CourseModule module : modules) {
+    public void updateCourseModules(ModulesUpdateRequest modulesUpdateRequest, Integer courseId) {
 
+        for(CourseModule module : modulesUpdateRequest.getModules()) {
             if(module.getId() == null) {
                 repository.createCourseModule(module, courseId);
             } else {
                 repository.updateCourseModule(module);
             }
         }
+
+        modulesUpdateRequest.getDeletedModulesId().forEach(id -> {
+            repository.deleteModuleResources(id);
+            //todo tasks etc
+        });
+        repository.deleteModules(modulesUpdateRequest.getDeletedModulesId());
     }
 
     private Map<String, UserProfileInfo> getTeachersMap(Set<String> logins) {

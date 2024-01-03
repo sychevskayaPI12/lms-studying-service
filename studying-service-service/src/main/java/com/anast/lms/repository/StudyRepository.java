@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static com.anast.lms.generated.jooq.Tables.*;
 import static com.anast.lms.generated.jooq.tables.Group.GROUP;
@@ -204,6 +205,28 @@ public class StudyRepository {
                 .set(MODULE.MODULE_ORDER, module.getOrder())
                 .set(MODULE.CONTENT, module.getContent())
                 .set(MODULE.COURSE_ID, courseId)
+                .execute();
+    }
+
+    public void deleteModuleResources(Integer moduleId) {
+
+        List<Integer> resourcesId = context
+                .select(MODULE_RESOURCE_LINK.RESOURCE_ID)
+                .from(MODULE_RESOURCE_LINK)
+                .where(MODULE_RESOURCE_LINK.MODULE_ID.eq(moduleId))
+                .fetch(MODULE_RESOURCE_LINK.RESOURCE_ID);
+
+        context.deleteFrom(MODULE_RESOURCE_LINK)
+                .where(MODULE_RESOURCE_LINK.MODULE_ID.eq(moduleId))
+                .execute();
+        context.deleteFrom(MODULE_RESOURCE)
+                .where(MODULE_RESOURCE.ID.in(resourcesId))
+                .execute();
+    }
+
+    public void deleteModules(Set<Integer> ids) {
+        context.deleteFrom(MODULE)
+                .where(MODULE.ID.in(ids))
                 .execute();
     }
 

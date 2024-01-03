@@ -1,9 +1,6 @@
 package com.anast.lms.client;
 
-import com.anast.lms.model.Course;
-import com.anast.lms.model.CourseFullInfoResponse;
-import com.anast.lms.model.CourseModule;
-import com.anast.lms.model.WeekScheduler;
+import com.anast.lms.model.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,5 +36,5 @@ public interface StudyRestService {
 
     @PostMapping("/study/{id}/course/modules")
     void updateCourseModules(@PathVariable("id") Integer courseId,
-                             @RequestBody List<CourseModule> modules);
+                             @RequestBody ModulesUpdateRequest modulesUpdateRequest);
 }

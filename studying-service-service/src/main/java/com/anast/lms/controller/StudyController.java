@@ -1,10 +1,7 @@
 package com.anast.lms.controller;
 
 import com.anast.lms.client.StudyRestService;
-import com.anast.lms.model.Course;
-import com.anast.lms.model.CourseFullInfoResponse;
-import com.anast.lms.model.CourseModule;
-import com.anast.lms.model.WeekScheduler;
+import com.anast.lms.model.*;
 import com.anast.lms.service.StudyService;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,7 +48,7 @@ public class StudyController implements StudyRestService {
     }
 
     @Override
-    public void updateCourseModules(Integer courseId, List<CourseModule> modules) {
-        studyService.updateCourseModules(modules, courseId);
+    public void updateCourseModules(Integer courseId, ModulesUpdateRequest modulesUpdateRequest) {
+        studyService.updateCourseModules(modulesUpdateRequest, courseId);
     }
 }
