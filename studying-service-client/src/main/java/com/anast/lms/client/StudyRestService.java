@@ -1,6 +1,7 @@
 package com.anast.lms.client;
 
 import com.anast.lms.model.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,4 +38,7 @@ public interface StudyRestService {
     @PostMapping("/study/{id}/course/modules")
     void updateCourseModules(@PathVariable("id") Integer courseId,
                              @RequestBody ModulesUpdateRequest modulesUpdateRequest);
+
+    @PostMapping(value = "/study/file")
+    ResponseEntity<byte[]> getFileData(@RequestBody ModuleResource resource);
 }

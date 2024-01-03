@@ -3,6 +3,10 @@ package com.anast.lms.controller;
 import com.anast.lms.client.StudyRestService;
 import com.anast.lms.model.*;
 import com.anast.lms.service.StudyService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -50,5 +54,14 @@ public class StudyController implements StudyRestService {
     @Override
     public void updateCourseModules(Integer courseId, ModulesUpdateRequest modulesUpdateRequest) {
         studyService.updateCourseModules(modulesUpdateRequest, courseId);
+    }
+
+    @Override
+    public ResponseEntity<byte[]> getFileData(ModuleResource resource) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("filename", resource.getDisplayFileName());
+
+        return new ResponseEntity<>(studyService.getFileDataBytes(resource), headers, HttpStatus.OK);
     }
 }

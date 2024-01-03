@@ -7,8 +7,13 @@ import com.anast.lms.service.external.user.UserServiceClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
@@ -75,14 +80,6 @@ public class StudyService {
                 course.getDiscipline().getTeachers().add(getTeacherProfileInfo(login)));
 
         List<CourseModule> modules = repository.getCourseModules(id);
-
-        //получение файлов
-        modules.forEach(module -> {
-            module.getResources().forEach(res -> {
-                File file = new File(dirPath + "\\" + res.getFileName());
-                res.setFile(file);
-            });
-        });
         return new CourseFullInfoResponse(course, modules);
     }
 
@@ -151,6 +148,17 @@ public class StudyService {
             //todo tasks etc
         });
         repository.deleteModules(modulesUpdateRequest.getDeletedModulesId());
+    }
+
+    public byte[] getFileDataBytes(ModuleResource resource) {
+        File file = new File(dirPath + "\\" + resource.getFileName());
+
+        try (FileInputStream inputStream = new FileInputStream(file)){
+            return inputStream.readAllBytes();
+        } catch (IOException fileNotFoundException) {
+            fileNotFoundException.printStackTrace();
+            return new byte[0];
+        }
     }
 
     private Map<String, UserProfileInfo> getTeachersMap(Set<String> logins) {

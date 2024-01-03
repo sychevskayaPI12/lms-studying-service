@@ -15,9 +15,6 @@ public class ModuleResource {
     @JsonProperty("display_file_name")
     private String displayFileName;
 
-    @JsonProperty("file")
-    private File file;
-
     public ModuleResource(Integer id, String fileName, String displayFileName) {
         this.id = id;
         this.fileName = fileName;
@@ -50,11 +47,4 @@ public class ModuleResource {
         this.displayFileName = displayFileName;
     }
 
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
 }
