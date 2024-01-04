@@ -1,0 +1,1 @@
+insert into lms_study.task_type values ('lab'), ('practical'), ('control'), ('course');

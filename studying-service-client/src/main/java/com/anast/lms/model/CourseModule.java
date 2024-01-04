@@ -22,15 +22,21 @@ public class CourseModule {
     @JsonProperty("resources")
     private List<ModuleResource> moduleResources = new ArrayList<>();
 
+    @JsonProperty("tasks")
+    private List<Task> moduleTasks = new ArrayList<>();
+
+
     public CourseModule() {
     }
 
-    public CourseModule(Integer id, String title, String content, short order, List<ModuleResource> moduleResources) {
+    public CourseModule(Integer id, String title, String content, short order,
+                        List<ModuleResource> moduleResources, List<Task> moduleTasks) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.order = order;
         this.moduleResources = moduleResources;
+        this.moduleTasks = moduleTasks;
     }
 
     public Integer getId() {
@@ -71,5 +77,13 @@ public class CourseModule {
 
     public void setResources(List<ModuleResource> moduleResources) {
         this.moduleResources = moduleResources;
+    }
+
+    public List<Task> getModuleTasks() {
+        return moduleTasks;
+    }
+
+    public void setModuleTasks(List<Task> moduleTasks) {
+        this.moduleTasks = moduleTasks;
     }
 }

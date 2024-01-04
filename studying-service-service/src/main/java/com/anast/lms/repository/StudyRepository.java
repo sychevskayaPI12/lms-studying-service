@@ -1,10 +1,7 @@
 package com.anast.lms.repository;
 
 import com.anast.lms.generated.jooq.Tables;
-import com.anast.lms.generated.jooq.tables.records.GroupRecord;
-import com.anast.lms.generated.jooq.tables.records.ModuleRecord;
-import com.anast.lms.generated.jooq.tables.records.ModuleResourceRecord;
-import com.anast.lms.generated.jooq.tables.records.TeacherRecord;
+import com.anast.lms.generated.jooq.tables.records.*;
 import com.anast.lms.model.*;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -190,6 +187,24 @@ public class StudyRepository {
                 .fetch(this::mapModuleResource);
     }
 
+    public List<Task> getModuleTasks(Integer moduleId) {
+        return context.selectFrom(TASK)
+                .where(TASK.ID.in(
+                        context.select(MODULE_TASK_LINK.TASK_ID).from(MODULE_TASK_LINK)
+                        .where(MODULE_TASK_LINK.MODULE_ID.eq(moduleId))
+                ))
+                .fetch(this::mapTask);
+    }
+
+    public List<ModuleResource> getTaskResources(Integer taskId) {
+        return context.selectFrom(MODULE_RESOURCE)
+                .where(MODULE_RESOURCE.ID.in(
+                        context.select(TASK_RESOURCE_LINK.RESOURCE_ID).from(TASK_RESOURCE_LINK)
+                                .where(TASK_RESOURCE_LINK.TASK_ID.eq(taskId))
+                ))
+                .fetch(this::mapModuleResource);
+    }
+
     public void updateCourseModule(CourseModule module) {
         context.update(MODULE)
                 .set(MODULE.TITLE, module.getTitle())
@@ -269,12 +284,14 @@ public class StudyRepository {
 
     private CourseModule mapModule(ModuleRecord record) {
         List<ModuleResource> moduleResources = getModuleResources(record.getId());
+        List<Task> tasks = getModuleTasks(record.getId());
         return new CourseModule(
                 record.getId(),
                 record.getTitle(),
                 record.getContent(),
                 record.getModuleOrder(),
-                moduleResources);
+                moduleResources,
+                tasks);
     }
 
     private SchedulerItem mapScheduleItem(Record record) {
@@ -292,6 +309,18 @@ public class StudyRepository {
                 record.getId(),
                 record.getStoreFileName(),
                 record.getDisplayFileName()
+        );
+    }
+
+    private Task mapTask(TaskRecord record) {
+        List<ModuleResource> taskResources = getTaskResources(record.getId());
+        return new Task(
+              record.getId(),
+              record.getTypeCode(),
+              record.getTitle(),
+              record.getDescription(),
+              record.getDeadline(),
+              taskResources
         );
     }
 }
