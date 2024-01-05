@@ -239,6 +239,15 @@ public class StudyRepository {
                 .execute();
     }
 
+    public void deleteResources(Set<Integer> ids) {
+        context.deleteFrom(MODULE_RESOURCE_LINK)
+                .where(MODULE_RESOURCE_LINK.RESOURCE_ID.in(ids))
+                .execute();
+        context.deleteFrom(MODULE_RESOURCE)
+                .where(MODULE_RESOURCE.ID.in(ids))
+                .execute();
+    }
+
     public void deleteModules(Set<Integer> ids) {
         context.deleteFrom(MODULE)
                 .where(MODULE.ID.in(ids))

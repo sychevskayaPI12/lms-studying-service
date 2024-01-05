@@ -143,6 +143,8 @@ public class StudyService {
             }
         }
 
+        repository.deleteResources(modulesUpdateRequest.getDeletedResources());
+
         modulesUpdateRequest.getDeletedModulesId().forEach(id -> {
             repository.deleteModuleResources(id);
             //todo tasks etc
