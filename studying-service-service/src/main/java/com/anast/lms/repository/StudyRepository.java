@@ -214,13 +214,14 @@ public class StudyRepository {
                 .execute();
     }
 
-    public void createCourseModule(CourseModule module, Integer courseId) {
-        context.insertInto(MODULE)
+    public Integer createCourseModule(CourseModule module, Integer courseId) {
+        return context.insertInto(MODULE)
                 .set(MODULE.TITLE, module.getTitle())
                 .set(MODULE.MODULE_ORDER, module.getOrder())
                 .set(MODULE.CONTENT, module.getContent())
                 .set(MODULE.COURSE_ID, courseId)
-                .execute();
+                .returningResult(MODULE.ID)
+                .fetchOne().component1();
     }
 
     public void deleteModuleResources(Integer moduleId) {
@@ -253,6 +254,27 @@ public class StudyRepository {
                 .where(MODULE.ID.in(ids))
                 .execute();
     }
+
+    public void createModuleResources(List<ModuleResource> resources, Integer moduleId) {
+        for(ModuleResource resource : resources) {
+            createModuleResource(resource, moduleId);
+        }
+    }
+
+    public void createModuleResource(ModuleResource resource, Integer moduleId) {
+
+        Integer resourceId = context.insertInto(MODULE_RESOURCE)
+                .set(MODULE_RESOURCE.DISPLAY_FILE_NAME, resource.getDisplayFileName())
+                .set(MODULE_RESOURCE.STORE_FILE_NAME, resource.getFileName())
+                .returningResult(MODULE_RESOURCE.ID)
+                .fetchOne().component1();
+
+        context.insertInto(MODULE_RESOURCE_LINK)
+                .set(MODULE_RESOURCE_LINK.MODULE_ID, moduleId)
+                .set(MODULE_RESOURCE_LINK.RESOURCE_ID, resourceId)
+                .execute();
+    }
+
 
     private Course mapCourseRecord(Record r) {
         return new Course(

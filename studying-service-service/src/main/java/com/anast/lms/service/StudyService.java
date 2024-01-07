@@ -136,15 +136,20 @@ public class StudyService {
     public void updateCourseModules(ModulesUpdateRequest modulesUpdateRequest, Integer courseId) {
 
         for(CourseModule module : modulesUpdateRequest.getModules()) {
+
             if(module.getId() == null) {
-                repository.createCourseModule(module, courseId);
+                Integer moduleId = repository.createCourseModule(module, courseId);
+                module.setId(moduleId);
             } else {
                 repository.updateCourseModule(module);
             }
+            repository.createModuleResources(module.getResources(), module.getId());
         }
 
+        //удаление указанных ресурсов
         repository.deleteResources(modulesUpdateRequest.getDeletedResources());
 
+        //удаление модулей с его доченими сущностями
         modulesUpdateRequest.getDeletedModulesId().forEach(id -> {
             repository.deleteModuleResources(id);
             //todo tasks etc
@@ -198,5 +203,10 @@ public class StudyService {
         } else {
             return 2;
         }
+    }
+
+    private void deleteFiles(List<String> fileNames) {
+        //todo
+        //удалим чтобы не копились, но это не критично пока
     }
 }
