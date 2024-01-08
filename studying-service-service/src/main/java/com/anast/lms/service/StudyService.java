@@ -10,10 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
@@ -166,6 +165,15 @@ public class StudyService {
             fileNotFoundException.printStackTrace();
             return new byte[0];
         }
+    }
+
+    public void uploadFileData(CustomMultipartFile file) {
+        String filePath = dirPath + "\\" + file.getOriginalFilename();
+         try(FileOutputStream fileOutputStream = new FileOutputStream(filePath)) {
+             fileOutputStream.write(file.getBytes());
+         } catch (IOException e) {
+             e.printStackTrace();
+         }
     }
 
     private Map<String, UserProfileInfo> getTeachersMap(Set<String> logins) {

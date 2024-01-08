@@ -3,8 +3,11 @@ package com.anast.lms.client;
 import com.anast.lms.model.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 
 @RestController
@@ -41,4 +44,7 @@ public interface StudyRestService {
 
     @PostMapping(value = "/study/file")
     ResponseEntity<byte[]> getFileData(@RequestBody ModuleResource resource);
+
+    @PostMapping("/study/file/upload/bytes")
+    void uploadFileData(@RequestBody byte[] fileData, @RequestParam("file_name") String fileName);
 }

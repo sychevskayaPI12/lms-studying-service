@@ -3,10 +3,7 @@ package com.anast.lms.controller;
 import com.anast.lms.client.StudyRestService;
 import com.anast.lms.model.*;
 import com.anast.lms.service.StudyService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -63,5 +60,12 @@ public class StudyController implements StudyRestService {
         headers.setContentDispositionFormData("filename", resource.getDisplayFileName());
 
         return new ResponseEntity<>(studyService.getFileDataBytes(resource), headers, HttpStatus.OK);
+    }
+
+    @Override
+    public void uploadFileData(byte[] fileData, String fileName) {
+
+        CustomMultipartFile multipartFile = new CustomMultipartFile(fileData, fileName);
+        studyService.uploadFileData(multipartFile);
     }
 }
