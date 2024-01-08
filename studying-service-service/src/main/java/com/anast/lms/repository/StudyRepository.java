@@ -10,6 +10,7 @@ import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -255,9 +256,21 @@ public class StudyRepository {
                 .execute();
     }
 
+    /**
+     * Сохранение зпаисей о ресурсах модуля
+     */
     public void createModuleResources(List<ModuleResource> resources, Integer moduleId) {
         for(ModuleResource resource : resources) {
             createModuleResource(resource, moduleId);
+        }
+    }
+
+    /**
+     * Сохранение зпаисей о ресурсах задачи
+     */
+    public void createTaskResources(List<ModuleResource> resources, Integer taskId) {
+        for(ModuleResource resource : resources) {
+            createTaskResource(resource, taskId);
         }
     }
 
@@ -275,6 +288,81 @@ public class StudyRepository {
                 .execute();
     }
 
+    public void createTaskResource(ModuleResource resource, Integer taskId) {
+        Integer resourceId = context.insertInto(MODULE_RESOURCE)
+                .set(MODULE_RESOURCE.DISPLAY_FILE_NAME, resource.getDisplayFileName())
+                .set(MODULE_RESOURCE.STORE_FILE_NAME, resource.getFileName())
+                .returningResult(MODULE_RESOURCE.ID)
+                .fetchOne().component1();
+
+        context.insertInto(TASK_RESOURCE_LINK)
+                .set(TASK_RESOURCE_LINK.TASK_ID, taskId)
+                .set(TASK_RESOURCE_LINK.RESOURCE_ID, resourceId)
+                .execute();
+    }
+
+    public void deleteTaskResources(Set<Integer> tasksIds) {
+
+        List<Integer> resourcesIds =
+                context.select(TASK_RESOURCE_LINK.RESOURCE_ID)
+                .from(TASK_RESOURCE_LINK)
+                 .where(TASK_RESOURCE_LINK.TASK_ID.in(tasksIds))
+                .fetch(TASK_RESOURCE_LINK.RESOURCE_ID);
+
+        context.deleteFrom(TASK_RESOURCE_LINK)
+                .where(TASK_RESOURCE_LINK.TASK_ID.in(tasksIds))
+                .execute();
+
+        context.deleteFrom(MODULE_RESOURCE)
+                .where(MODULE_RESOURCE.ID.in(resourcesIds))
+                .execute();
+    }
+
+    public void deleteTasks(Set<Integer> tasksIds) {
+        context.deleteFrom(MODULE_TASK_LINK)
+                .where(MODULE_TASK_LINK.TASK_ID.in(tasksIds))
+                .execute();
+        context.deleteFrom(TASK)
+                .where(TASK.ID.in(tasksIds))
+                .execute();
+    }
+
+    public Integer createTask(Task task, Integer moduleId) {
+        Integer taskId = context.insertInto(TASK)
+                .set(TASK.TITLE, task.getTitle())
+                .set(TASK.DESCRIPTION, task.getDescription())
+                .set(TASK.DEADLINE, task.getDeadLine())
+                .set(TASK.TYPE_CODE, task.getTaskType())
+                .returningResult(TASK.ID)
+                .fetchOne().component1();
+
+        context.insertInto(MODULE_TASK_LINK)
+                .set(MODULE_TASK_LINK.TASK_ID, taskId)
+                .set(MODULE_TASK_LINK.MODULE_ID, moduleId)
+                .execute();
+
+        return taskId;
+    }
+
+    public void updateTask(Task task) {
+        context.update(TASK)
+                .set(TASK.TITLE, task.getTitle())
+                .set(TASK.DESCRIPTION, task.getDescription())
+                .set(TASK.DEADLINE, task.getDeadLine())
+                .set(TASK.TYPE_CODE, task.getTaskType())
+                .where(TASK.ID.eq(task.getId()))
+                .execute();
+    }
+
+    public void deleteModuleTasks(Integer moduleId) {
+        List<Integer> tasksId = context.select(MODULE_TASK_LINK.TASK_ID)
+                .from(MODULE_TASK_LINK)
+                .where(MODULE_TASK_LINK.MODULE_ID.eq(moduleId))
+                .fetch(MODULE_TASK_LINK.TASK_ID);
+        Set<Integer> tasksIdSet = new HashSet<>(tasksId);
+        deleteTaskResources(tasksIdSet);
+        deleteTasks(tasksIdSet);
+    }
 
     private Course mapCourseRecord(Record r) {
         return new Course(

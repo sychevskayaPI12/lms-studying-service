@@ -41,6 +41,8 @@ public class Task {
         this.resources = resources;
     }
 
+    public Task() { }
+
     public Integer getId() {
         return id;
     }

@@ -18,10 +18,15 @@ public class ModulesUpdateRequest {
     @JsonProperty("deleted_resources")
     private Set<Integer> deletedResources = new HashSet<>();
 
-    public ModulesUpdateRequest(List<CourseModule> modules, Set<Integer> deletedModulesId, Set<Integer> deletedResources) {
+    @JsonProperty("deleted_tasks")
+    private Set<Integer> deletedTasks = new HashSet<>();
+
+    public ModulesUpdateRequest(List<CourseModule> modules, Set<Integer> deletedModulesId,
+                                Set<Integer> deletedResources, Set<Integer> deletedTasks) {
         this.modules = modules;
         this.deletedModulesId = deletedModulesId;
         this.deletedResources = deletedResources;
+        this.deletedTasks = deletedTasks;
     }
 
     public ModulesUpdateRequest() {
@@ -49,5 +54,13 @@ public class ModulesUpdateRequest {
 
     public void setDeletedResources(Set<Integer> deletedResources) {
         this.deletedResources = deletedResources;
+    }
+
+    public Set<Integer> getDeletedTasks() {
+        return deletedTasks;
+    }
+
+    public void setDeletedTasks(Set<Integer> deletedTasks) {
+        this.deletedTasks = deletedTasks;
     }
 }

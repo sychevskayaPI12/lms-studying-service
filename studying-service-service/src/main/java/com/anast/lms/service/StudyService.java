@@ -142,16 +142,25 @@ public class StudyService {
             } else {
                 repository.updateCourseModule(module);
             }
-            repository.createModuleResources(module.getResources(), module.getId());
+
+            //ресурсы
+            List<ModuleResource> newModuleResources = module.getResources()
+                    .stream().filter(r -> r.getId() == null).collect(Collectors.toList());
+            repository.createModuleResources(newModuleResources, module.getId());
+
+            //задачи
+            updateOrCreateTasks(module.getModuleTasks(), module.getId());
+
         }
 
-        //удаление указанных ресурсов
+        //удаление указанных ресурсов и задач
         repository.deleteResources(modulesUpdateRequest.getDeletedResources());
+        deleteTasks(modulesUpdateRequest.getDeletedTasks());
 
         //удаление модулей с его доченими сущностями
         modulesUpdateRequest.getDeletedModulesId().forEach(id -> {
             repository.deleteModuleResources(id);
-            //todo tasks etc
+            repository.deleteModuleTasks(id);
         });
         repository.deleteModules(modulesUpdateRequest.getDeletedModulesId());
     }
@@ -216,5 +225,28 @@ public class StudyService {
     private void deleteFiles(List<String> fileNames) {
         //todo
         //удалим чтобы не копились, но это не критично пока
+    }
+
+    private void deleteTasks(Set<Integer> tasksToDeleteId) {
+        //удалить ресурсы
+        repository.deleteTaskResources(tasksToDeleteId);
+        //удалить сами задачи
+        repository.deleteTasks(tasksToDeleteId);
+    }
+
+    private void updateOrCreateTasks(List<Task> tasks, Integer moduleId) {
+        tasks.forEach( task -> {
+            if(task.getId() == null) {
+                Integer taskId = repository.createTask(task, moduleId);
+                task.setId(taskId);
+            } else {
+                repository.updateTask(task);
+            }
+
+            //ресурсы
+            List<ModuleResource> newTaskResources = task.getResources()
+                    .stream().filter(r -> r.getId() == null).collect(Collectors.toList());
+            repository.createTaskResources(newTaskResources, task.getId());
+        });
     }
 }
