@@ -18,4 +18,9 @@ public class ProfileController implements ProfileRestService {
     public UserProfileInfo getUserProfileInfo(String login) {
         return profileService.getUserProfileInfo(login);
     }
+
+    @Override
+    public void saveProfileInfo(UserProfileInfo profileInfo) {
+        profileService.saveProfileInfo(profileInfo);
+    }
 }

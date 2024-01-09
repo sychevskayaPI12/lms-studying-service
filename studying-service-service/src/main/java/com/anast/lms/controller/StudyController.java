@@ -34,6 +34,21 @@ public class StudyController implements StudyRestService {
     }
 
     @Override
+    public List<Stage> getStages() {
+        return studyService.getStages();
+    }
+
+    @Override
+    public List<StudyForm> getStudyForms() {
+        return studyService.getStudyForms();
+    }
+
+    @Override
+    public List<String> getGroups(String specialty, String stage, String studyForm, Integer currentCourseNum) {
+        return studyService.getGroups(specialty, stage, studyForm, currentCourseNum);
+    }
+
+    @Override
     public CourseFullInfoResponse getCourseFullInfo(Integer id) {
         return studyService.getCourseFullInfoById(id);
     }

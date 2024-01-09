@@ -7,6 +7,7 @@ import com.anast.lms.model.UserProfileInfo;
 import com.anast.lms.repository.ProfileRepository;
 import com.anast.lms.service.external.user.UserServiceClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProfileService {
@@ -40,5 +41,15 @@ public class ProfileService {
         profileInfo.setStudentInfo(studentInfo);
 
         return profileInfo;
+    }
+
+    @Transactional
+    public void saveProfileInfo(UserProfileInfo profileInfo) {
+        if(profileInfo.getStudentInfo() != null) {
+            profileRepository.saveStudentProfile(profileInfo.getStudentInfo(), profileInfo.getLogin());
+        }
+        if(profileInfo.getTeacherInfo() != null) {
+            profileRepository.saveTeacherInfo(profileInfo.getTeacherInfo(), profileInfo.getLogin());
+        }
     }
 }

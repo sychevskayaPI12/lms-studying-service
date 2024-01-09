@@ -70,6 +70,19 @@ public class StudyService {
         return repository.getSpecialties();
     }
 
+    public List<Stage> getStages() {
+        return repository.getStages();
+    }
+
+    public List<StudyForm> getStudyForms() {
+        return repository.getStudyForms();
+    }
+
+    public List<String> getGroups(String specialty, String stage, String studyForm, Integer currentCourseNum) {
+        //todo calc year
+        return repository.getGroups(specialty, stage, studyForm, (short) 2021);
+    }
+
     public CourseFullInfoResponse getCourseFullInfoById(Integer id) {
 
         Course course = repository.getCourseById(id);

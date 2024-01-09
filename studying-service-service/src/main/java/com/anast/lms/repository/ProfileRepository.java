@@ -30,6 +30,20 @@ public class ProfileRepository {
                 .fetchAny(this::mapTeacherInfo);
     }
 
+    public void saveStudentProfile(StudentProfileInfo profileInfo, String login) {
+        context.insertInto(STUDENT)
+                .set(STUDENT.LOGIN, login)
+                .set(STUDENT.GROUP_CODE, profileInfo.getGroupCode())
+                .execute();
+    }
+
+    public void saveTeacherInfo(TeacherProfileInfo profileInfo, String login) {
+        context.insertInto(TEACHER)
+                .set(TEACHER.LOGIN, login)
+                .set(TEACHER.DEGREE, profileInfo.getDegree())
+                .execute();
+    }
+
     private StudentProfileInfo mapStudentRecord(StudentRecord record) {
         return new StudentProfileInfo(record.getGroupCode());
     }

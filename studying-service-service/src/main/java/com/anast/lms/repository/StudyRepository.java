@@ -108,6 +108,16 @@ public class StudyRepository {
                 .getValues(SPECIALTY.CODE);
     }
 
+    public List<Stage> getStages() {
+        return context.selectFrom(STAGE)
+                .fetch(this::mapSage);
+    }
+
+    public List<StudyForm> getStudyForms() {
+        return context.selectFrom(STUDY_FORM)
+                .fetch(this::mapStudyForm);
+    }
+
     public Course getCourseById(Integer id) {
         return context.selectFrom(COURSE
                 .leftJoin(DISCIPLINE).on(COURSE.DISCIPLINE_ID.eq(DISCIPLINE.ID))
@@ -166,11 +176,17 @@ public class StudyRepository {
      * @return список кодов групп
      */
     public List<String> getGroups(DisciplineInstance discipline) {
+        //todo вычислить год поступления по семестру, добавить
+        return getGroups(discipline.getSpecialty(), discipline.getStageCode(),
+                discipline.getStudyFormCode(), (short) 2021);
+    }
+
+    public List<String> getGroups(String specialty, String stage, String studyForm, short year) {
         return context.selectFrom(GROUP)
-                .where(GROUP.SPECIALTY_CODE.eq(discipline.getSpecialty())
-                .and(GROUP.STAGE_CODE.eq(discipline.getStageCode()))
-                .and(GROUP.STUDY_FORM_CODE.eq(discipline.getStudyFormCode())))
-                //todo вычислить год поступления по семестру, добавить
+                .where(GROUP.SPECIALTY_CODE.eq(specialty)
+                        .and(GROUP.STAGE_CODE.eq(stage))
+                        .and(GROUP.STUDY_FORM_CODE.eq(studyForm)))
+                //todo год поступления
                 .fetch().getValues(GROUP.CODE);
     }
 
@@ -441,5 +457,13 @@ public class StudyRepository {
               record.getDeadline(),
               taskResources
         );
+    }
+
+    private Stage mapSage(StageRecord stageRecord) {
+        return new Stage(stageRecord.getCode(), stageRecord.getTitle());
+    }
+
+    private StudyForm mapStudyForm(StudyFormRecord record) {
+        return new StudyForm(record.getCode(), record.getTitle(), record.getDescription());
     }
 }

@@ -27,6 +27,18 @@ public interface StudyRestService {
     @GetMapping("/study/specialties")
     List<String> getSpecialties();
 
+    @GetMapping("/study/stages")
+    List<Stage> getStages();
+
+    @GetMapping("/study/study_form")
+    List<StudyForm> getStudyForms();
+
+    @GetMapping("/study/groups")
+    List<String> getGroups(@RequestParam("specialty") String specialty,
+                           @RequestParam("stage") String stage,
+                           @RequestParam("study_form") String studyForm,
+                           @RequestParam("course_num") Integer currentCourseNum);
+
     @GetMapping("/study/{id}/course")
     CourseFullInfoResponse getCourseFullInfo(@PathVariable("id") Integer id);
 
