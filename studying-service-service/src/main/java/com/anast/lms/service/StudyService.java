@@ -79,8 +79,9 @@ public class StudyService {
     }
 
     public List<String> getGroups(String specialty, String stage, String studyForm, Integer currentCourseNum) {
-        //todo calc year
-        return repository.getGroups(specialty, stage, studyForm, (short) 2021);
+
+        short entryYear = calcEntryYearFromCourseNumber(currentCourseNum);
+        return repository.getGroups(specialty, stage, studyForm, entryYear);
     }
 
     public CourseFullInfoResponse getCourseFullInfoById(Integer id) {
@@ -130,7 +131,9 @@ public class StudyService {
         //если отдельная группа не указана, наполняем списком групп направления
         for (SchedulerItem item : items) {
             if (item.getGroups() == null || item.getGroups().isEmpty()) {
-                List<String> groups = repository.getGroups(item.getDiscipline());
+                DisciplineInstance discipline = item.getDiscipline();
+                short entryYear = calcEntryYearFromSemesterNumber(discipline.getSemester());
+                List<String> groups = repository.getGroups(discipline, entryYear);
                 item.setGroups(String.join(", ", groups));
             }
         }
@@ -233,6 +236,15 @@ public class StudyService {
         } else {
             return 2;
         }
+    }
+
+    private short calcEntryYearFromCourseNumber(Integer courseNum) {
+        return (short) (LocalDate.now().getYear() - courseNum + getAdditionalSemCoef());
+    }
+
+    private short calcEntryYearFromSemesterNumber(short semester) {
+        short courseNum = (short) Math.round(semester / 2.0);
+        return (short) (LocalDate.now().getYear() - courseNum);
     }
 
     private void deleteFiles(List<String> fileNames) {

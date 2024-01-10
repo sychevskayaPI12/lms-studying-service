@@ -175,18 +175,17 @@ public class StudyRepository {
      * @param discipline - экземпляр дисциплины. содержит параметры для поиска групп потока
      * @return список кодов групп
      */
-    public List<String> getGroups(DisciplineInstance discipline) {
-        //todo вычислить год поступления по семестру, добавить
+    public List<String> getGroups(DisciplineInstance discipline, short year) {
         return getGroups(discipline.getSpecialty(), discipline.getStageCode(),
-                discipline.getStudyFormCode(), (short) 2021);
+                discipline.getStudyFormCode(), year);
     }
 
     public List<String> getGroups(String specialty, String stage, String studyForm, short year) {
         return context.selectFrom(GROUP)
                 .where(GROUP.SPECIALTY_CODE.eq(specialty)
                         .and(GROUP.STAGE_CODE.eq(stage))
-                        .and(GROUP.STUDY_FORM_CODE.eq(studyForm)))
-                //todo год поступления
+                        .and(GROUP.STUDY_FORM_CODE.eq(studyForm))
+                        .and(GROUP.ENTRY_YEAR.eq(year)))
                 .fetch().getValues(GROUP.CODE);
     }
 
