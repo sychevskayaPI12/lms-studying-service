@@ -1,4 +1,4 @@
-package com.anast.lms.model;
+package com.anast.lms.model.course;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

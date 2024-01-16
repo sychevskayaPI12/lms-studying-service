@@ -1,13 +1,12 @@
 package com.anast.lms.client;
 
 import com.anast.lms.model.*;
-import org.springframework.http.ResponseEntity;
+import com.anast.lms.model.course.Course;
+import com.anast.lms.model.course.CourseFullInfoResponse;
+import com.anast.lms.model.profile.UserProfile;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-
-import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 
 @RestController
@@ -39,9 +38,6 @@ public interface StudyRestService {
                            @RequestParam("study_form") String studyForm,
                            @RequestParam("course_num") Integer currentCourseNum);
 
-    @GetMapping("/study/{id}/course")
-    CourseFullInfoResponse getCourseFullInfo(@PathVariable("id") Integer id);
-
     @GetMapping("/study/scheduler/{group_code}/student")
     WeekScheduler getStudentScheduler(@PathVariable("group_code") String groupCode,
                                       @RequestParam("is_current_day") Boolean isCurrentDay);
@@ -50,13 +46,10 @@ public interface StudyRestService {
     WeekScheduler getTeacherScheduler(@PathVariable("login") String login,
                                       @RequestParam("is_current_day") Boolean isCurrentDay);
 
-    @PostMapping("/study/{id}/course/modules")
-    void updateCourseModules(@PathVariable("id") Integer courseId,
-                             @RequestBody ModulesUpdateRequest modulesUpdateRequest);
 
-    @PostMapping(value = "/study/file")
-    ResponseEntity<byte[]> getFileData(@RequestBody ModuleResource resource);
+    @GetMapping("/study/profile/{login}")
+    UserProfile getUserProfileInfo(@PathVariable("login") String login);
 
-    @PostMapping("/study/file/upload/bytes")
-    void uploadFileData(@RequestBody byte[] fileData, @RequestParam("file_name") String fileName);
+    @PostMapping("/study/profile/")
+    void saveProfileInfo(@RequestBody UserProfile profileInfo);
 }

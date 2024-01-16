@@ -1,18 +1,22 @@
 package com.anast.lms.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 
-//пусть лежит про запас
 public class CustomMultipartFile implements MultipartFile {
 
     @JsonProperty("input")
     private byte[] input;
 
-    public CustomMultipartFile(byte[] input) {
+    @JsonProperty("file_name")
+    private String fileName;
+
+    public CustomMultipartFile(byte[] input, String fileName) {
         this.input = input;
+        this.fileName = fileName;
     }
 
     public CustomMultipartFile() {
@@ -20,12 +24,12 @@ public class CustomMultipartFile implements MultipartFile {
 
     @Override
     public String getName() {
-        return null;
+        return this.fileName;
     }
 
     @Override
     public String getOriginalFilename() {
-        return null;
+        return this.fileName;
     }
 
     @Override

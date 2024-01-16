@@ -2,8 +2,9 @@ package com.anast.lms.controller;
 
 import com.anast.lms.client.StudyRestService;
 import com.anast.lms.model.*;
+import com.anast.lms.model.course.Course;
+import com.anast.lms.model.profile.UserProfile;
 import com.anast.lms.service.StudyService;
-import org.springframework.http.*;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -49,11 +50,6 @@ public class StudyController implements StudyRestService {
     }
 
     @Override
-    public CourseFullInfoResponse getCourseFullInfo(Integer id) {
-        return studyService.getCourseFullInfoById(id);
-    }
-
-    @Override
     public WeekScheduler getStudentScheduler(String groupCode, Boolean isCurrentDay) {
         return studyService.getStudentScheduler(groupCode, isCurrentDay);
     }
@@ -64,23 +60,12 @@ public class StudyController implements StudyRestService {
     }
 
     @Override
-    public void updateCourseModules(Integer courseId, ModulesUpdateRequest modulesUpdateRequest) {
-        studyService.updateCourseModules(modulesUpdateRequest, courseId);
+    public UserProfile getUserProfileInfo(String login) {
+        return studyService.getUserProfile(login);
     }
 
     @Override
-    public ResponseEntity<byte[]> getFileData(ModuleResource resource) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("filename", resource.getDisplayFileName());
-
-        return new ResponseEntity<>(studyService.getFileDataBytes(resource), headers, HttpStatus.OK);
-    }
-
-    @Override
-    public void uploadFileData(byte[] fileData, String fileName) {
-
-        CustomMultipartFile multipartFile = new CustomMultipartFile(fileData, fileName);
-        studyService.uploadFileData(multipartFile);
+    public void saveProfileInfo(UserProfile profileInfo) {
+        //todo
     }
 }

@@ -2,17 +2,11 @@ package com.anast.lms.service;
 
 import com.anast.lms.generated.jooq.tables.records.GroupRecord;
 import com.anast.lms.model.*;
+import com.anast.lms.model.course.Course;
+import com.anast.lms.model.profile.*;
 import com.anast.lms.repository.StudyRepository;
-import com.anast.lms.service.external.user.UserServiceClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
@@ -22,14 +16,12 @@ import java.util.stream.Collectors;
 public class StudyService {
 
     private final StudyRepository repository;
-    private final UserServiceClient userServiceClient;
+    private final ProfileService profileService;
 
-    @Value("${upload.path}")
-    private String dirPath;
 
-    public StudyService(StudyRepository repository, UserServiceClient userServiceClient) {
+    public StudyService(StudyRepository repository, ProfileService profileService) {
         this.repository = repository;
-        this.userServiceClient = userServiceClient;
+        this.profileService = profileService;
     }
 
     public int calcStudentCourse(String groupCode) {
@@ -48,11 +40,11 @@ public class StudyService {
 
         Set<String> logins = new HashSet<>();
         courses.forEach(c -> logins.addAll(c.getDiscipline().getTeacherLogins()));
-        Map<String, UserProfileInfo> teachersMap = getTeachersMap(logins);
+        Map<String, UserProfile> teachersMap = getTeachersMap(logins);
 
        courses.forEach(course -> {
            course.getDiscipline().getTeacherLogins().forEach( login ->
-                   course.getDiscipline().getTeachers().add(teachersMap.get(login))
+                   course.getDiscipline().getTeachers().add(teachersMap.get(login).getUserProfileInfo())
            );
        });
 
@@ -64,6 +56,14 @@ public class StudyService {
                                           String form, String stage, Boolean searchActive) {
         return repository.getTeacherCourses(teacherLogin, specialty, form, stage, searchActive);
 
+    }
+
+    public Course getCourseById(Integer id) {
+        Course course = repository.getCourseById(id);
+        //информация о преподавателях
+        course.getDiscipline().getTeacherLogins().forEach(login ->
+                course.getDiscipline().getTeachers().add(getUserProfile(login).getUserProfileInfo()));
+        return course;
     }
 
     public List<String> getSpecialties() {
@@ -84,18 +84,6 @@ public class StudyService {
         return repository.getGroups(specialty, stage, studyForm, entryYear);
     }
 
-    public CourseFullInfoResponse getCourseFullInfoById(Integer id) {
-
-        Course course = repository.getCourseById(id);
-
-        //информация о преподавателях
-        course.getDiscipline().getTeacherLogins().forEach(login ->
-                course.getDiscipline().getTeachers().add(getTeacherProfileInfo(login)));
-
-        List<CourseModule> modules = repository.getCourseModules(id);
-        return new CourseFullInfoResponse(course, modules);
-    }
-
     /**
      * Получить список занятий студента, сгруппированный по дням недели
      *
@@ -110,7 +98,7 @@ public class StudyService {
         List<SchedulerItem> items = repository.getSchedulerItems(group, dayOfWeek);
         //информация о преподавателях
         items.forEach(item -> item.getDiscipline().getTeacherLogins().forEach(login ->
-                item.getDiscipline().getTeachers().add(getTeacherProfileInfo(login))));
+                item.getDiscipline().getTeachers().add(getUserProfile(login).getUserProfileInfo())));
 
         Map<Short, List<SchedulerItem>> itemsWeekMap = items.stream()
                 .collect(Collectors.groupingBy(SchedulerItem::getDayOfWeek));
@@ -143,85 +131,24 @@ public class StudyService {
         return new WeekScheduler(itemsWeekMap);
     }
 
-    /**
-     * Обновление информации о модулях курса: редактирование и удаление существующих, добавление новых
-     *
-     */
-    @Transactional
-    public void updateCourseModules(ModulesUpdateRequest modulesUpdateRequest, Integer courseId) {
 
-        for(CourseModule module : modulesUpdateRequest.getModules()) {
-
-            if(module.getId() == null) {
-                Integer moduleId = repository.createCourseModule(module, courseId);
-                module.setId(moduleId);
-            } else {
-                repository.updateCourseModule(module);
-            }
-
-            //ресурсы
-            List<ModuleResource> newModuleResources = module.getResources()
-                    .stream().filter(r -> r.getId() == null).collect(Collectors.toList());
-            repository.createModuleResources(newModuleResources, module.getId());
-
-            //задачи
-            updateOrCreateTasks(module.getModuleTasks(), module.getId());
-
-        }
-
-        //удаление указанных ресурсов и задач
-        repository.deleteResources(modulesUpdateRequest.getDeletedResources());
-        deleteTasks(modulesUpdateRequest.getDeletedTasks());
-
-        //удаление модулей с его доченими сущностями
-        modulesUpdateRequest.getDeletedModulesId().forEach(id -> {
-            repository.deleteModuleResources(id);
-            repository.deleteModuleTasks(id);
-        });
-        repository.deleteModules(modulesUpdateRequest.getDeletedModulesId());
-    }
-
-    public byte[] getFileDataBytes(ModuleResource resource) {
-        File file = new File(dirPath + "\\" + resource.getFileName());
-
-        try (FileInputStream inputStream = new FileInputStream(file)){
-            return inputStream.readAllBytes();
-        } catch (IOException fileNotFoundException) {
-            fileNotFoundException.printStackTrace();
-            return new byte[0];
-        }
-    }
-
-    public void uploadFileData(CustomMultipartFile file) {
-        String filePath = dirPath + "\\" + file.getOriginalFilename();
-         try(FileOutputStream fileOutputStream = new FileOutputStream(filePath)) {
-             fileOutputStream.write(file.getBytes());
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
-    }
-
-    private Map<String, UserProfileInfo> getTeachersMap(Set<String> logins) {
-        Map<String, UserProfileInfo> teachersMap = new HashMap<>();
+    private Map<String, UserProfile> getTeachersMap(Set<String> logins) {
+        Map<String, UserProfile> teachersMap = new HashMap<>();
         for (String login : logins) {
-            teachersMap.put(login, getTeacherProfileInfo(login));
+            teachersMap.put(login, getUserProfile(login));
         }
         return teachersMap;
     }
 
-    private UserProfileInfo getTeacherProfileInfo(String login) {
-        UserDetail userDetail = userServiceClient.getUserDetail(login);
-        return buildTeacherProfileInfo(userDetail);
+    public UserProfile getUserProfile(String login) {
+        UserProfileInfo profileInfo = profileService.getUserProfileInfo(login);
+
+        TeacherProfileInfo teacherInfo = getTeacherInfo(login);
+        StudentProfileInfo studentInfo = getStudentInfo(login);
+
+        return new UserProfile(profileInfo, studentInfo, teacherInfo);
     }
 
-    private UserProfileInfo buildTeacherProfileInfo(UserDetail userDetail) {
-        return new UserProfileInfo(
-                userDetail.getLogin(),
-                userDetail.getFullName(),
-                userDetail.getMail(),
-                null,
-                repository.getTeacherProfileInfo(userDetail.getLogin()));
-    }
 
     private int getAdditionalSemCoef() {
         int currSemNum = getCurrentSemester();
@@ -247,31 +174,17 @@ public class StudyService {
         return (short) (LocalDate.now().getYear() - courseNum);
     }
 
-    private void deleteFiles(List<String> fileNames) {
+
+    public TeacherProfileInfo getTeacherInfo(String login) {
         //todo
-        //удалим чтобы не копились, но это не критично пока
+        return new TeacherProfileInfo();
     }
 
-    private void deleteTasks(Set<Integer> tasksToDeleteId) {
-        //удалить ресурсы
-        repository.deleteTaskResources(tasksToDeleteId);
-        //удалить сами задачи
-        repository.deleteTasks(tasksToDeleteId);
-    }
-
-    private void updateOrCreateTasks(List<Task> tasks, Integer moduleId) {
-        tasks.forEach( task -> {
-            if(task.getId() == null) {
-                Integer taskId = repository.createTask(task, moduleId);
-                task.setId(taskId);
-            } else {
-                repository.updateTask(task);
-            }
-
-            //ресурсы
-            List<ModuleResource> newTaskResources = task.getResources()
-                    .stream().filter(r -> r.getId() == null).collect(Collectors.toList());
-            repository.createTaskResources(newTaskResources, task.getId());
-        });
+    public StudentProfileInfo getStudentInfo(String login) {
+        StudentProfileInfo studentInfo = repository.getStudentInfo(login);
+        if(studentInfo != null) {
+            studentInfo.setCourse(calcStudentCourse(studentInfo.getGroupCode()));
+        }
+        return studentInfo;
     }
 }

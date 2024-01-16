@@ -1,4 +1,4 @@
-package com.anast.lms.model;
+package com.anast.lms.model.profile;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -13,18 +13,10 @@ public class UserProfileInfo {
     @JsonProperty("mail")
     private String mail;
 
-    @JsonProperty("student_info")
-    private StudentProfileInfo studentInfo;
-
-    @JsonProperty("teacher_info")
-    private TeacherProfileInfo teacherInfo;
-
-    public UserProfileInfo(String login, String fullName, String mail, StudentProfileInfo studentInfo, TeacherProfileInfo teacherInfo) {
+    public UserProfileInfo(String login, String fullName, String mail) {
         this.login = login;
         this.fullName = fullName;
         this.mail = mail;
-        this.studentInfo = studentInfo;
-        this.teacherInfo = teacherInfo;
     }
 
     public UserProfileInfo() {
@@ -52,22 +44,6 @@ public class UserProfileInfo {
 
     public void setMail(String mail) {
         this.mail = mail;
-    }
-
-    public StudentProfileInfo getStudentInfo() {
-        return studentInfo;
-    }
-
-    public void setStudentInfo(StudentProfileInfo studentInfo) {
-        this.studentInfo = studentInfo;
-    }
-
-    public TeacherProfileInfo getTeacherInfo() {
-        return teacherInfo;
-    }
-
-    public void setTeacherInfo(TeacherProfileInfo teacherInfo) {
-        this.teacherInfo = teacherInfo;
     }
 
 }

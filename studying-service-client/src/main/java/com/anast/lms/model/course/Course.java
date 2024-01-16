@@ -1,5 +1,6 @@
-package com.anast.lms.model;
+package com.anast.lms.model.course;
 
+import com.anast.lms.model.DisciplineInstance;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

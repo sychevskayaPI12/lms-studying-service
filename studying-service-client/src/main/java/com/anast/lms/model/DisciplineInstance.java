@@ -1,5 +1,6 @@
 package com.anast.lms.model;
 
+import com.anast.lms.model.profile.UserProfileInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;

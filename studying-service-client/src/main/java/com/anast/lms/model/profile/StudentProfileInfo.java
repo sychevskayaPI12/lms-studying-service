@@ -1,4 +1,4 @@
-package com.anast.lms.model;
+package com.anast.lms.model.profile;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

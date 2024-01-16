@@ -1,5 +1,6 @@
-package com.anast.lms.model;
+package com.anast.lms.model.course;
 
+import com.anast.lms.model.course.CourseModule;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
