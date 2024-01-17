@@ -78,4 +78,9 @@ public class StudyController implements StudyRestService {
     public List<FacultyPosition> getFacultyPositions() {
        return studyService.getFacultyPositions();
     }
+
+    @Override
+    public void deleteUserProfile(String login) {
+        studyService.deleteUserProfile(login);
+    }
 }

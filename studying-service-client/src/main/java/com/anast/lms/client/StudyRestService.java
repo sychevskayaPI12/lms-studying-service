@@ -58,4 +58,7 @@ public interface StudyRestService {
 
     @GetMapping("/study/faculty_positions")
     List<FacultyPosition> getFacultyPositions();
+
+    @GetMapping("/study/profile/{login}/delete")
+    void deleteUserProfile(@PathVariable("login") String login);
 }

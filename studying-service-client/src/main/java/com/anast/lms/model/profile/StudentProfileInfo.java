@@ -22,6 +22,11 @@ public class StudentProfileInfo {
     public StudentProfileInfo() {
     }
 
+    @Override
+    public String toString() {
+        return String.format("Студент %s курса. Группа %s", getCourse(), getGroupCode());
+    }
+
     public String getGroupCode() {
         return groupCode;
     }

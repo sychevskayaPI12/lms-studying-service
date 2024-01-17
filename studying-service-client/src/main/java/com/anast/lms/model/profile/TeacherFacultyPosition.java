@@ -22,8 +22,7 @@ public class TeacherFacultyPosition {
 
     @Override
     public String toString() {
-        //todo
-        return "";
+        return String.format("%s Кафедры %s", position.getTitle(), department.getShortTitle());
     }
 
     public FacultyPosition getPosition() {

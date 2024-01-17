@@ -162,6 +162,12 @@ public class StudyService {
         }
     }
 
+    @Transactional
+    public void deleteUserProfile(String login) {
+        repository.deleteStudent(login);
+        repository.deleteTeacher(login);
+    }
+
     public List<Department> getDepartments() {
         return repository.getDepartments();
     }
@@ -197,7 +203,9 @@ public class StudyService {
     @Transactional
     public TeacherProfileInfo getTeacherInfo(String login) {
         TeacherProfileInfo teacherProfileInfo = repository.getTeacherInfo(login);
-        teacherProfileInfo.setPositions(repository.getTeacherPositions(login));
+        if(teacherProfileInfo != null) {
+            teacherProfileInfo.setPositions(repository.getTeacherPositions(login));
+        }
         return teacherProfileInfo;
     }
 

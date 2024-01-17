@@ -14,7 +14,9 @@
     <include file="007_task.sql" relativeToChangelogFile="true"/>
     <include file="007_task_type_insert.sql" relativeToChangelogFile="true"/>
     <include file="008_faculty_position.sql" relativeToChangelogFile="true"/>
-
+    <include file="009_moderation.sql" relativeToChangelogFile="true"/>
+    <include file="009_moderation_alter.sql" relativeToChangelogFile="true"/>
+    <include file="009_moderation_alter_2.sql" relativeToChangelogFile="true"/>
 
 
 

@@ -71,6 +71,21 @@ public class StudyRepository {
                 .execute();
     }
 
+    public void deleteStudent(String login) {
+        context.selectFrom(STUDENT)
+            .where(STUDENT.LOGIN.eq(login))
+            .execute();
+    }
+
+    public void deleteTeacher(String login) {
+        context.deleteFrom(TEACHER_DEPARTMENT_POSITION_LINK)
+                .where(TEACHER_DEPARTMENT_POSITION_LINK.LOGIN.eq(login))
+                .execute();
+        context.deleteFrom(TEACHER)
+                .where(TEACHER.LOGIN.eq(login))
+                .execute();
+    }
+
     public GroupRecord getGroup(String groupCode) {
         return context.selectFrom(Tables.GROUP).where(GROUP.CODE.eq(groupCode)).fetchAny();
     }
