@@ -6,6 +6,7 @@ import com.anast.lms.model.course.Course;
 import com.anast.lms.model.profile.*;
 import com.anast.lms.repository.StudyRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -149,6 +150,25 @@ public class StudyService {
         return new UserProfile(profileInfo, studentInfo, teacherInfo);
     }
 
+    @Transactional
+    public void saveUserProfile(UserProfile userProfile) {
+        String login = userProfile.getUserProfileInfo().getLogin();
+
+        if(userProfile.getTeacherInfo() != null) {
+            repository.saveTeacher(userProfile.getTeacherInfo(), login);
+        }
+        if(userProfile.getStudentInfo() != null) {
+            repository.saveStudent(userProfile.getStudentInfo(), login);
+        }
+    }
+
+    public List<Department> getDepartments() {
+        return repository.getDepartments();
+    }
+
+    public List<FacultyPosition> getFacultyPositions() {
+        return repository.getFacultyPositions();
+    }
 
     private int getAdditionalSemCoef() {
         int currSemNum = getCurrentSemester();
@@ -174,10 +194,11 @@ public class StudyService {
         return (short) (LocalDate.now().getYear() - courseNum);
     }
 
-
+    @Transactional
     public TeacherProfileInfo getTeacherInfo(String login) {
-        //todo
-        return new TeacherProfileInfo();
+        TeacherProfileInfo teacherProfileInfo = repository.getTeacherInfo(login);
+        teacherProfileInfo.setPositions(repository.getTeacherPositions(login));
+        return teacherProfileInfo;
     }
 
     public StudentProfileInfo getStudentInfo(String login) {

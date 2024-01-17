@@ -52,4 +52,10 @@ public interface StudyRestService {
 
     @PostMapping("/study/profile/")
     void saveProfileInfo(@RequestBody UserProfile profileInfo);
+
+    @GetMapping("/study/departments")
+    List<Department> getDepartments();
+
+    @GetMapping("/study/faculty_positions")
+    List<FacultyPosition> getFacultyPositions();
 }

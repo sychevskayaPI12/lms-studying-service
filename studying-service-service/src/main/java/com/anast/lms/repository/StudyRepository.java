@@ -10,11 +10,10 @@ import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static com.anast.lms.generated.jooq.Tables.*;
 import static com.anast.lms.generated.jooq.tables.Group.GROUP;
@@ -39,6 +38,38 @@ public class StudyRepository {
                 .fetchAny(this::mapTeacherInfo);
     }
 
+    public List<TeacherFacultyPosition> getTeacherPositions(String login) {
+        return context.selectFrom(TEACHER_DEPARTMENT_POSITION_LINK
+                .leftJoin(FACULTY_POSITION).on(TEACHER_DEPARTMENT_POSITION_LINK.POSITION_CODE
+                .eq(FACULTY_POSITION.CODE))
+                .leftJoin(DEPARTMENT).on(TEACHER_DEPARTMENT_POSITION_LINK.DEPARTMENT_ID
+                .eq(DEPARTMENT.ID)))
+                .where(TEACHER_DEPARTMENT_POSITION_LINK.LOGIN.eq(login))
+                .fetch(this::mapTeacherFacultyPosition);
+
+    }
+
+    @Transactional
+    public void saveTeacher(TeacherProfileInfo teacherInfo, String login) {
+        context.insertInto(TEACHER)
+                .set(TEACHER.LOGIN, login)
+                .execute();
+
+        teacherInfo.getPositions().forEach(position -> {
+            context.insertInto(TEACHER_DEPARTMENT_POSITION_LINK)
+                    .set(TEACHER_DEPARTMENT_POSITION_LINK.LOGIN, login)
+                    .set(TEACHER_DEPARTMENT_POSITION_LINK.POSITION_CODE, position.getPosition().getCode())
+                    .set(TEACHER_DEPARTMENT_POSITION_LINK.DEPARTMENT_ID, position.getDepartment().getDepartmentId())
+                    .execute();
+        });
+    }
+
+    public void saveStudent(StudentProfileInfo studentInfo, String login) {
+        context.insertInto(STUDENT)
+                .set(STUDENT.LOGIN, login)
+                .set(STUDENT.GROUP_CODE, studentInfo.getGroupCode())
+                .execute();
+    }
 
     public GroupRecord getGroup(String groupCode) {
         return context.selectFrom(Tables.GROUP).where(GROUP.CODE.eq(groupCode)).fetchAny();
@@ -198,10 +229,14 @@ public class StudyRepository {
                 .fetch().getValues(GROUP.CODE);
     }
 
-    public TeacherProfileInfo getTeacherProfileInfo(String login) {
-        //todo degrees
-        TeacherRecord record = context.selectFrom(TEACHER).where(TEACHER.LOGIN.eq(login)).fetchAny();
-        return new TeacherProfileInfo();
+    public List<Department> getDepartments() {
+        return context.selectFrom(DEPARTMENT)
+                .fetch(this::mapDepartment);
+    }
+
+    public List<FacultyPosition> getFacultyPositions() {
+        return context.selectFrom(FACULTY_POSITION)
+                .fetch(this::mapFacultyPosition);
     }
 
     private Course mapCourseRecord(Record r) {
@@ -263,8 +298,33 @@ public class StudyRepository {
     private StudentProfileInfo mapStudentRecord(StudentRecord record) {
         return new StudentProfileInfo(record.getGroupCode());
     }
+
     private TeacherProfileInfo mapTeacherInfo(TeacherRecord record) {
-        //todo
         return new TeacherProfileInfo();
     }
+
+    private Department mapDepartment(Record r) {
+        return new Department(
+                r.getValue(DEPARTMENT.ID),
+                r.getValue(DEPARTMENT.ABBREVIATION),
+                r.getValue(DEPARTMENT.SHORT_TITLE),
+                r.getValue(DEPARTMENT.FULL_TITLE)
+        );
+    }
+
+    public FacultyPosition mapFacultyPosition(Record r) {
+        return new FacultyPosition(
+                r.getValue(FACULTY_POSITION.CODE),
+                r.getValue(FACULTY_POSITION.TITLE)
+        );
+    }
+
+    public TeacherFacultyPosition mapTeacherFacultyPosition(Record r) {
+        return new TeacherFacultyPosition(
+                mapFacultyPosition(r),
+                mapDepartment(r)
+        );
+    }
+
+
 }

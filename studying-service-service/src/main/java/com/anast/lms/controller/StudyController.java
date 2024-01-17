@@ -65,7 +65,17 @@ public class StudyController implements StudyRestService {
     }
 
     @Override
-    public void saveProfileInfo(UserProfile profileInfo) {
-        //todo
+    public void saveProfileInfo(UserProfile userProfile) {
+        studyService.saveUserProfile(userProfile);
+    }
+
+    @Override
+    public List<Department> getDepartments() {
+        return studyService.getDepartments();
+    }
+
+    @Override
+    public List<FacultyPosition> getFacultyPositions() {
+       return studyService.getFacultyPositions();
     }
 }
