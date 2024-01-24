@@ -32,6 +32,14 @@ public class StudyService {
         return currentYear - year + getAdditionalSemCoef();
     }
 
+    public DisciplineInstance getDisciplineInstance(Integer id) {
+        return repository.getDisciplineInstanceById(id);
+    }
+
+    public List<DisciplineInstance> getTeacherDisciplines(String login) {
+        return repository.getDisciplinesByTeacherId(login);
+    }
+
     public List<Course> getStudentCourses(String groupCode, Boolean isActive) {
         GroupRecord group = repository.getGroup(groupCode);
         int studentCourseNum = calcStudentCourse(groupCode);

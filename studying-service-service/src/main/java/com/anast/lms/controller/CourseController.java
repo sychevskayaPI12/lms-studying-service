@@ -26,6 +26,11 @@ public class CourseController implements CourseRestService {
     }
 
     @Override
+    public Course createNewCourse(Integer disciplineId) {
+        return courseService.createNewCourse(disciplineId);
+    }
+
+    @Override
     public void updateCourseModules(Integer courseId, ModulesUpdateRequest modulesUpdateRequest) {
         courseService.updateCourseModules(modulesUpdateRequest, courseId);
     }

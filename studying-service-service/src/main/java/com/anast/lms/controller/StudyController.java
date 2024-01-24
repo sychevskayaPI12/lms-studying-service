@@ -83,4 +83,9 @@ public class StudyController implements StudyRestService {
     public void deleteUserProfile(String login) {
         studyService.deleteUserProfile(login);
     }
+
+    @Override
+    public List<DisciplineInstance> getTeacherDisciplines(String login) {
+        return studyService.getTeacherDisciplines(login);
+    }
 }

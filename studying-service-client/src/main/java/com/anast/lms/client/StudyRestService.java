@@ -61,4 +61,7 @@ public interface StudyRestService {
 
     @GetMapping("/study/profile/{login}/delete")
     void deleteUserProfile(@PathVariable("login") String login);
+
+    @GetMapping("/study/disciplines/{login}/teacher")
+    List<DisciplineInstance> getTeacherDisciplines(@PathVariable("login") String login);
 }

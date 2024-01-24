@@ -1,5 +1,6 @@
 package com.anast.lms.client;
 
+import com.anast.lms.model.course.Course;
 import com.anast.lms.model.course.CourseFullInfoResponse;
 import com.anast.lms.model.course.ModuleResource;
 import com.anast.lms.model.course.ModulesUpdateRequest;
@@ -8,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 public interface CourseRestService {
+
+    @PostMapping("/course/new")
+    Course createNewCourse(@RequestParam("discipline_id") Integer disciplineId);
 
     @PostMapping("/course/{id}/modules")
     void updateCourseModules(@PathVariable("id") Integer courseId,

@@ -1,10 +1,12 @@
 package com.anast.lms.service;
 
+import com.anast.lms.model.DisciplineInstance;
 import com.anast.lms.model.course.*;
 import com.anast.lms.repository.CourseRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +27,14 @@ public class CourseService {
         List<CourseModule> modules = courseRepository.getCourseModules(id);
         return new CourseFullInfoResponse(course, modules);
     }
+
+    public Course createNewCourse(Integer disciplineId) {
+        //todo проверить пересечение периодов
+        Integer id = courseRepository.createNewCourse(disciplineId);
+        DisciplineInstance disciplineInstance = studyService.getDisciplineInstance(disciplineId);
+        return new Course(id, LocalDate.now(), LocalDate.now().plusDays(60), disciplineInstance);
+    }
+
 
     /**
      * Обновление информации о модулях курса: редактирование и удаление существующих, добавление новых

@@ -114,7 +114,7 @@ public class StudyRepository {
     public List<Course> getTeacherCourses(String teacherLogin, String specialty,
                                           String form, String stage, Boolean searchActive) {
 
-        List<Integer> disciplineIds = getDisciplinesByTeacherId(teacherLogin);
+        List<Integer> disciplineIds = getDisciplinesIdsByTeacherId(teacherLogin);
 
         Condition condition = DSL.trueCondition();
         condition = condition.and(DISCIPLINE.ID.in(disciplineIds));
@@ -152,7 +152,7 @@ public class StudyRepository {
                 .fetch(this::mapCourseRecord);
     }
 
-    private List<Integer> getDisciplinesByTeacherId(String teacherLogin) {
+    private List<Integer> getDisciplinesIdsByTeacherId(String teacherLogin) {
         Integer teacherId = context.select(TEACHER.ID)
                 .from(TEACHER)
                 .where(TEACHER.LOGIN.eq(teacherLogin)).fetchAny().component1();
@@ -160,6 +160,18 @@ public class StudyRepository {
                 .from(TEACHER_DISCIPLINE_LINK)
                 .where(TEACHER_DISCIPLINE_LINK.TEACHER_ID.eq(teacherId))
                 .fetch().getValues(TEACHER_DISCIPLINE_LINK.DISCIPLINE_ID);
+    }
+
+    public List<DisciplineInstance> getDisciplinesByTeacherId(String teacherLogin) {
+        Integer teacherId = context.select(TEACHER.ID)
+                .from(TEACHER)
+                .where(TEACHER.LOGIN.eq(teacherLogin)).fetchAny().component1();
+
+        return context.selectFrom(TEACHER_DISCIPLINE_LINK
+                .leftJoin(DISCIPLINE).on(TEACHER_DISCIPLINE_LINK.DISCIPLINE_ID.eq(DISCIPLINE.ID))
+                .leftJoin(DISCIPLINE_DESCRIPTOR).on(DISCIPLINE_DESCRIPTOR.ID.eq(DISCIPLINE.DISCIPLINE_DESCR_ID)))
+                .where(TEACHER_DISCIPLINE_LINK.TEACHER_ID.eq(teacherId))
+                .fetch(this::mapDisciplineInstance);
     }
 
     public List<String> getSpecialties() {
@@ -209,7 +221,7 @@ public class StudyRepository {
 
     public List<SchedulerItem> getSchedulerItems(String teacherLogin, Short dayOfWeek) {
 
-        List<Integer> disciplineIds = getDisciplinesByTeacherId(teacherLogin);
+        List<Integer> disciplineIds = getDisciplinesIdsByTeacherId(teacherLogin);
 
         Condition condition = DSL.trueCondition();
         condition = condition.and(DISCIPLINE.ID.in(disciplineIds));
@@ -252,6 +264,14 @@ public class StudyRepository {
     public List<FacultyPosition> getFacultyPositions() {
         return context.selectFrom(FACULTY_POSITION)
                 .fetch(this::mapFacultyPosition);
+    }
+
+    public DisciplineInstance getDisciplineInstanceById(Integer id) {
+        return context.selectFrom(DISCIPLINE
+                .leftJoin(DISCIPLINE_DESCRIPTOR)
+                .on(DISCIPLINE.DISCIPLINE_DESCR_ID.eq(DISCIPLINE_DESCRIPTOR.ID)))
+                .where(DISCIPLINE.ID.eq(id))
+                .fetchAny(this::mapDisciplineInstance);
     }
 
     private Course mapCourseRecord(Record r) {

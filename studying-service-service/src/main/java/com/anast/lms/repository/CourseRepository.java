@@ -9,6 +9,7 @@ import com.anast.lms.model.course.Task;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,6 +26,15 @@ public class CourseRepository {
         this.context = context;
     }
 
+
+    public Integer createNewCourse(Integer disciplineId) {
+        return context.insertInto(COURSE)
+                .set(COURSE.DISCIPLINE_ID, disciplineId)
+                .set(COURSE.START_DATE, LocalDate.now())
+                .set(COURSE.END_DATE, LocalDate.now().plusDays(60))
+                .returningResult(COURSE.ID)
+                .fetchOne().component1();
+    }
 
     public List<CourseModule> getCourseModules(Integer courseId) {
         return context.selectFrom(MODULE).where(MODULE.COURSE_ID.eq(courseId))
